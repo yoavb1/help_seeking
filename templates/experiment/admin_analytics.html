@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Core Operations Analytics Panel</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <style>
+        body { background: #f4f6f9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .metric-card { border: none; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: transform 0.15s; }
+        .metric-card:hover { transform: translateY(-2px); }
+        .table-responsive { background: #fff; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid py-4 px-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="font-weight-bold text-dark mb-0">Experiment Control Hub</h2>
+            <p class="text-muted mb-0">Real-time statistics & participant observation arrays</p>
+        </div>
+        <a href="/admin/" class="btn btn-outline-secondary font-weight-bold">← Return to Standard Django Admin</a>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card p-3 shadow-sm border-0">
+                <h6 class="font-weight-bold text-uppercase text-muted small mb-3">Sample Distribution Balancing</h6>
+                <div class="row">
+                    {% for item in condition_counts %}
+                    <div class="col-md-3">
+                        <div class="bg-light p-3 rounded border text-center">
+                            <span class="text-uppercase font-weight-bold text-secondary small d-block">{{ item.condition|default:"Unassigned" }}</span>
+                            <h3 class="mb-0 font-weight-bold text-dark mt-1">{{ item.total }} <span class="small text-muted" style="font-size: 1rem;">users</span></h3>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-muted">No experimental cohorts registered yet.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card p-3 mb-4 shadow-sm border-0">
+        <form method="GET" class="form-row align-items-end">
+            <div class="col-md-4">
+                <label class="font-weight-bold text-muted small text-uppercase">Filter by Condition</label>
+                <select name="condition" class="form-control">
+                    <option value="">-- All Conditions --</option>
+                    {% for cond in distinct_conditions %}
+                        <option value="{{ cond }}" {% if selected_condition == cond %}selected{% endif %}>{{ cond|upper }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="font-weight-bold text-muted small text-uppercase">Filter by Gender</label>
+                <select name="gender" class="form-control">
+                    <option value="">-- All Genders --</option>
+                    {% for gen in distinct_genders %}
+                        <option value="{{ gen }}" {% if selected_gender == gen %}selected{% endif %}>{{ gen }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary font-weight-bold btn-block">Apply Data Filters</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card p-3 metric-card bg-white text-dark border-left border-primary" style="border-left-width: 4px !important;">
+                <span class="text-muted small font-weight-bold text-uppercase">Active Sample Size</span>
+                <h2 class="font-weight-bold mb-0 mt-2 text-primary">{{ stats.total_participants|default:0 }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 metric-card bg-white text-dark border-left border-warning" style="border-left-width: 4px !important;">
+                <span class="text-muted small font-weight-bold text-uppercase">Avg Queries / User</span>
+                <h2 class="font-weight-bold mb-0 mt-2 text-warning">{{ stats.avg_help_sought|default:0|floatformat:2 }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 metric-card bg-white text-dark border-left border-success" style="border-left-width: 4px !important;">
+                <span class="text-muted small font-weight-bold text-uppercase">Human vs AI Assistance</span>
+                <h4 class="font-weight-bold mb-0 mt-2 text-success">
+                    👨‍💼 {{ stats.total_human_clicks|default:0 }} <span class="text-muted font-weight-normal mx-1">|</span> 🤖 {{ stats.total_ai_clicks|default:0 }}
+                </h4>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 metric-card bg-white text-dark border-left border-danger" style="border-left-width: 4px !important;">
+                <span class="text-muted small font-weight-bold text-uppercase">Avg Mediation Metrics</span>
+                <h5 class="font-weight-bold mb-0 mt-2 text-danger">
+                    Cost Rating: {{ stats.avg_image_cost|default:"N/A"|floatformat:1 }} <br>
+                    Closeness: {{ stats.avg_closeness|default:"N/A"|floatformat:1 }}
+                </h5>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive p-3 border-0 shadow-sm">
+        <h5 class="font-weight-bold mb-3 text-dark">Individual Observation Records</h5>
+        <table class="table table-hover table-striped mb-0">
+            <thead class="thead-dark">
+                <tr>
+                    <th>User ID</th>
+                    <th>Condition</th>
+                    <th>Age / Gender</th>
+                    <th>Total Advice Sought</th>
+                    <th>Human Clicks</th>
+                    <th>AI Clicks</th>
+                    <th>Cost Rating</th>
+                    <th>Closeness</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for session in sessions %}
+                <tr>
+                    <td><span class="badge badge-secondary p-2">#{{ session.id }}</span></td>
+                    <td><span class="badge {% if session.condition == 'prestige' %}badge-success{% else %}badge-danger{% endif %} text-uppercase px-2 py-1">{{ session.condition }}</span></td>
+                    <td>{{ session.participant_age|default:"N/A" }} yrs / {{ session.participant_gender|default:"N/A" }}</td>
+                    <td class="font-weight-bold text-center">{{ session.total_help_sought }}</td>
+                    <td class="text-muted text-center">{{ session.human_clicks }}</td>
+                    <td class="text-muted text-center">{{ session.ai_clicks }}</td>
+                    <td>{{ session.image_cost_rating|default:"-" }}</td>
+                    <td>{{ session.closeness_rating|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">No records found matching current data filters.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

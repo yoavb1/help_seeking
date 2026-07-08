@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Global Operations Logistics Engine</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <style>
+        body { background: #f8f9fa; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .dashboard-container { max-width: 950px; margin: 40px auto; }
+        .card { border: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .timer-badge { font-size: 1.2rem; min-width: 90px; text-align: center; }
+        .lane-box { background: #f1f3f5; border-radius: 6px; padding: 15px; border: 2px solid transparent; }
+        .assistance-panel { background: #e8f4fd; border-left: 4px solid #007bff; border-radius: 4px; }
+        #central-feedback-banner { font-size: 1.3rem; transition: all 0.2s ease-in-out; }
+        .practice-banner { background: #fff3cd; color: #856404; border-bottom: 3px solid #ffeeba; font-weight: bold; }
+        .vignette-reminder { border-left: 4px solid #6c757d; background: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 15px; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div id="django-backend-config"
+     data-condition="{{ session.condition }}"
+     data-is-practice="{% if is_practice %}true{% else %}false{% endif %}"
+     data-max-trials="{{ max_trials|default:3 }}"
+     data-time-per-trial="{{ time_per_trial|default:15 }}">
+</div>
+
+<div class="text-center py-2 practice-banner text-uppercase small shadow-sm" id="mode-alert-strip">
+    ⚙️ Sandbox Practice Phase: Getting Familiar with System Interfaces (Untimed)
+</div>
+
+<div class="container dashboard-container" id="main-workspace-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white rounded shadow-sm">
+        <div>
+            <h4 class="font-weight-bold mb-0 text-dark">Logistics Routing Core</h4>
+            <small class="text-muted">Assigned Authority Vector: <strong class="text-uppercase text-primary">{{ session.condition }} Leadership</strong></small>
+        </div>
+        <div class="d-flex align-items-center text-center">
+            <div class="px-3 border-right">
+                <span class="text-muted small d-block text-uppercase font-weight-bold" id="progress-label">Task Run</span>
+                <h4 class="mb-0 font-weight-bold text-dark" id="trial-counter">1 / 10</h4>
+            </div>
+            <div class="px-3 border-right">
+                <span class="text-muted small d-block text-uppercase font-weight-bold">Total Points</span>
+                <h4 class="mb-0 font-weight-bold text-success" id="live-score-display">0 PTS</h4>
+            </div>
+            <div class="px-3">
+                <span class="text-muted small d-block text-uppercase font-weight-bold">Timer</span>
+                <span class="badge badge-warning p-2 timer-badge" id="timer-display">∞ INF</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert text-center font-weight-bold d-none mb-4 py-3" id="central-feedback-banner"></div>
+
+    <div class="card p-4 mb-4" id="task-card">
+        <h5 class="font-weight-bold mb-3 text-info">Current Trial Parameters</h5>
+        <div class="p-3 bg-light rounded border mb-4">
+            <p class="mb-1"><strong>Total Shipment Target:</strong> <span class="badge badge-primary font-weight-bold" id="target-cargo">15 Containers</span></p>
+            <p class="mb-0 text-secondary small" id="constraint-text-box">Loading routing parameters...</p>
+        </div>
+
+        <form id="routing-form">
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <div class="lane-box">
+                        <label class="font-weight-bold text-uppercase small text-muted">Air Freight Allocation</label>
+                        <input type="number" class="form-control form-control-lg text-center font-weight-bold" id="input-air" value="0" min="0">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="lane-box">
+                        <label class="font-weight-bold text-uppercase small text-muted">Ocean Freight Allocation</label>
+                        <input type="number" class="form-control form-control-lg text-center font-weight-bold" id="input-sea" value="0" min="0">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="lane-box">
+                        <label class="font-weight-bold text-uppercase small text-muted">Overland Rail Allocation</label>
+                        <input type="number" class="form-control form-control-lg text-center font-weight-bold" id="input-rail" value="0" min="0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <button type="button" class="btn btn-success btn-lg px-5 font-weight-bold" id="btn-submit-allocation">Submit Allocation</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card p-4 assistance-panel" id="help-card">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h6 class="font-weight-bold mb-1 text-primary">Need Optimization Assistance? <span class="badge badge-danger ml-2">Cost: -50 PTS</span></h6>
+                <p class="text-muted small mb-0">Consulting an assistant automates the layout grid but subtracts a premium operational fee from your score balance.</p>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-outline-primary font-weight-bold px-3" id="btn-help-human">Consult Director Vance</button>
+                <button type="button" class="btn btn-outline-info font-weight-bold px-3" id="btn-help-ai">Deploy Routing-AI Script</button>
+            </div>
+        </div>
+        <div class="mt-2 text-danger font-weight-bold small d-none" id="advisor-confirmation-tag">
+            ⚠️ Assistant deployed. A 50-point surcharge will be applied upon submission.
+        </div>
+    </div>
+</div>
+
+<div class="container my-5 d-none" id="interstitial-screen">
+    <div class="card p-5 max-width-700 mx-auto shadow border-0 text-center">
+        <h3 class="font-weight-bold text-dark id-title mb-3">Initializing System Core</h3>
+        <p class="text-muted text-description mb-4"></p>
+        <div class="vignette-reminder text-left d-none" id="vignette-reminder-box"></div>
+        <div class="mt-4">
+            <button class="btn btn-primary btn-lg px-5 font-weight-bold" id="btn-proceed-step">Proceed</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Parse data elements from safety container to eliminate formatting/syntax crashes
+const dataConfig = document.getElementById('django-backend-config');
+const managerCondition = dataConfig.getAttribute('data-condition');
+const isViewPractice = dataConfig.getAttribute('data-is-practice') === 'true';
+const dynamicMaxTrials = parseInt(dataConfig.getAttribute('data-max-trials'), 10) || 3;
+const maxTimePerTrial = parseInt(dataConfig.getAttribute('data-time-per-trial'), 10) || 15;
+
+const totalPracticeTrials = isViewPractice ? dynamicMaxTrials : 0;
+const totalRealTrials     = !isViewPractice ? dynamicMaxTrials : 3;
+
+let isPracticeMode = isViewPractice;
+let practiceIdx = 0;
+let realIdx = 0;
+
+let timer = null;
+let timeLeft = maxTimePerTrial;
+let trialStartTime = 0;
+let choiceLogs = [];
+let selectedHelpThisTrial = 'none';
+let rollingScore = 0;
+
+function generateTrialObject(num, diff) {
+    return {
+        number: num, difficulty: diff, target: 15,
+        air_rule: diff === 'easy' ? "Must equal 5." : "Must be less than 4.",
+        sea_rule: diff === 'easy' ? "Must equal 5." : "Must equal exactly double Air Freight.",
+        rail_rule: diff === 'easy' ? "Must equal 5." : "Takes remaining containers.",
+        sol_air: diff === 'easy' ? 5 : 3, sol_sea: diff === 'easy' ? 5 : 6, sol_rail: diff === 'easy' ? 5 : 6
+    };
+}
+
+// Build core array blocks safely
+const practiceDataset = [];
+for (let i = 1; i <= totalPracticeTrials; i++) {
+    practiceDataset.push(generateTrialObject(i, (i % 2 === 0) ? 'easy' : 'hard'));
+}
+
+const realDataset = [];
+for (let i = 1; i <= totalRealTrials; i++) {
+    realDataset.push(generateTrialObject(i, (i % 2 === 0) ? 'easy' : 'hard'));
+}
+if (realDataset.length > 0) {
+    realDataset.sort(() => Math.random() - 0.5);
+}
+
+window.onload = function() {
+    if (isPracticeMode) {
+        showInterstitial(
+            "System Check: Practice Phase",
+            `To help you become familiar with the system interfaces, you will now go through ${totalPracticeTrials} untimed practice rounds.`,
+            "Begin Practice Phase",
+            false
+        );
+    } else {
+        showInterstitial(
+            "🚨 Real Evaluation Initializing",
+            `The live evaluation engine is ready. You will execute exactly ${totalRealTrials} evaluation runs under a strict ${maxTimePerTrial}-second constraint.`,
+            "Initialize Live Evaluation",
+            true
+        );
+    }
+};
+
+function showInterstitial(title, description, buttonText, showVignette) {
+    document.getElementById('main-workspace-wrapper').classList.add('d-none');
+    document.getElementById('mode-alert-strip').classList.add('d-none');
+
+    let container = document.getElementById('interstitial-screen');
+    container.classList.remove('d-none');
+    container.querySelector('.id-title').innerText = title;
+    container.querySelector('.text-description').innerHTML = description;
+
+    let btn = document.getElementById('btn-proceed-step');
+    btn.innerText = buttonText;
+
+    let reminderBox = document.getElementById('vignette-reminder-box');
+    if (showVignette) {
+        reminderBox.classList.remove('d-none');
+        if (managerCondition === 'prestige') {
+            reminderBox.style.borderLeftColor = "#28a745";
+            reminderBox.innerHTML = `<strong>⚠️ Management Style Reminder:</strong> Director Vance expects you to use this task to cultivate your cross-border skills. He welcomes advice lookup actions to assist your decision process.`;
+        } else {
+            reminderBox.style.borderLeftColor = "#dc3545";
+            reminderBox.innerHTML = `<strong>⚠️ Management Style Reminder:</strong> Director Vance requires total system autonomy and flawless accuracy. He penalizes any dependency on others.`;
+        }
+    } else {
+        reminderBox.classList.add('d-none');
+    }
+
+    btn.onclick = function() {
+        container.classList.add('d-none');
+        document.getElementById('main-workspace-wrapper').classList.remove('d-none');
+        document.getElementById('mode-alert-strip').classList.remove('d-none');
+        startTrial();
+    };
+}
+
+function startTrial() {
+    let currentTrial;
+
+    if (isPracticeMode) {
+        if (practiceIdx >= totalPracticeTrials) {
+            isPracticeMode = false;
+            clearInterval(timer);
+            rollingScore = 0;
+            document.getElementById('live-score-display').innerText = "0 PTS";
+            showInterstitial(
+                "🚨 Practice Complete: Real Evaluation Initializing",
+                `Warmup complete. Initializing live tracking metrics.`,
+                "Initialize Live Evaluation",
+                true
+            );
+            return;
+        }
+        currentTrial = practiceDataset[practiceIdx];
+        document.getElementById('mode-alert-strip').className = "text-center py-2 practice-banner text-uppercase small shadow-sm";
+        document.getElementById('mode-alert-strip').innerText = "⚙️ Sandbox Practice Phase (Untimed)";
+        document.getElementById('progress-label').innerText = "Practice Run";
+        document.getElementById('trial-counter').innerText = `${practiceIdx + 1} / ${totalPracticeTrials}`;
+        document.getElementById('timer-display').innerText = "∞ INF";
+    } else {
+        if (realIdx >= totalRealTrials) {
+            transmitFinalPayload();
+            return;
+        }
+        currentTrial = realDataset[realIdx];
+        document.getElementById('mode-alert-strip').className = "text-center py-2 bg-danger text-white text-uppercase small font-weight-bold shadow-sm";
+        document.getElementById('mode-alert-strip').innerText = "🚨 Live Evaluation Active!";
+        document.getElementById('progress-label').innerText = "Live Evaluation";
+        document.getElementById('trial-counter').innerText = `${realIdx + 1} / ${totalRealTrials}`;
+    }
+
+    document.getElementById('central-feedback-banner').classList.add('d-none');
+    document.getElementById('advisor-confirmation-tag').classList.add('d-none');
+
+    document.getElementById('btn-submit-allocation').disabled = false;
+    document.getElementById('btn-help-human').disabled = false;
+    document.getElementById('btn-help-ai').disabled = false;
+    document.getElementById('input-air').disabled = false;
+    document.getElementById('input-sea').disabled = false;
+    document.getElementById('input-rail').disabled = false;
+
+    document.getElementById('constraint-text-box').innerHTML = `<strong>Air Matrix Constraint:</strong> ${currentTrial.air_rule} | <strong>Ocean Matrix Constraint:</strong> ${currentTrial.sea_rule} | <strong>Rail Constraint:</strong> ${currentTrial.rail_rule}`;
+    document.getElementById('input-air').value = 0;
+    document.getElementById('input-sea').value = 0;
+    document.getElementById('input-rail').value = 0;
+
+    selectedHelpThisTrial = 'none';
+    trialStartTime = performance.now();
+
+    if (!isPracticeMode) {
+        timeLeft = maxTimePerTrial;
+        document.getElementById('timer-display').innerText = `${timeLeft}s`;
+        document.getElementById('timer-display').className = "badge badge-dark p-2 timer-badge";
+
+        clearInterval(timer);
+        timer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer-display').innerText = `${timeLeft}s`;
+            if(timeLeft <= 5) document.getElementById('timer-display').className = "badge badge-danger p-2 timer-badge";
+            if(timeLeft <= 0) { clearInterval(timer); processSubmission(true); }
+        }, 1000);
+    }
+}
+
+document.getElementById('btn-help-human').addEventListener('click', () => triggerAdvisor('human'));
+document.getElementById('btn-help-ai').addEventListener('click', () => triggerAdvisor('ai'));
+
+function triggerAdvisor(type) {
+    if (selectedHelpThisTrial !== 'none') return;
+    selectedHelpThisTrial = type;
+
+    let currentTrial = isPracticeMode ? practiceDataset[practiceIdx] : realDataset[realIdx];
+    document.getElementById('input-air').value = currentTrial.sol_air;
+    document.getElementById('input-sea').value = currentTrial.sol_sea;
+    document.getElementById('input-rail').value = currentTrial.sol_rail;
+    document.getElementById('advisor-confirmation-tag').classList.remove('d-none');
+}
+
+document.getElementById('btn-submit-allocation').addEventListener('click', () => {
+    if (!isPracticeMode) clearInterval(timer);
+    processSubmission(false);
+});
+
+function processSubmission(timeout) {
+    let currentTrial = isPracticeMode ? practiceDataset[practiceIdx] : realDataset[realIdx];
+    let endTime = performance.now();
+    let duration = (endTime - trialStartTime) / 1000;
+
+    document.getElementById('btn-submit-allocation').disabled = true;
+    document.getElementById('btn-help-human').disabled = true;
+    document.getElementById('btn-help-ai').disabled = true;
+    document.getElementById('input-air').disabled = true;
+    document.getElementById('input-sea').disabled = true;
+    document.getElementById('input-rail').disabled = true;
+
+    let uAir = parseInt(document.getElementById('input-air').value) || 0;
+    let uSea = parseInt(document.getElementById('input-sea').value) || 0;
+    let uRail = parseInt(document.getElementById('input-rail').value) || 0;
+
+    let isCorrect = (!timeout) &&
+                    (uAir === currentTrial.sol_air) &&
+                    (uSea === currentTrial.sol_sea) &&
+                    (uRail === currentTrial.sol_rail);
+
+    let feedbackBanner = document.getElementById('central-feedback-banner');
+    feedbackBanner.classList.remove('d-none');
+
+    let pointsEarned = isCorrect ? 100 : 0;
+    let costIncurred = (selectedHelpThisTrial !== 'none') ? 50 : 0;
+    let netGain = pointsEarned - costIncurred;
+
+    if (isCorrect) {
+        rollingScore += netGain;
+        feedbackBanner.className = "alert alert-success text-center font-weight-bold mb-4 py-3";
+        if (isPracticeMode) {
+            feedbackBanner.innerText = `[PRACTICE] Correct! Reward: +${netGain} Points.`;
+        } else {
+            feedbackBanner.innerText = costIncurred > 0 ? `✓ SUCCESS: Correct! Net: +50 Points.` : `✓ SUCCESS: Correct! (+100 Points).`;
+        }
+    } else {
+        rollingScore -= costIncurred;
+        feedbackBanner.className = "alert alert-danger text-center font-weight-bold mb-4 py-3";
+        if (isPracticeMode) {
+            feedbackBanner.innerText = `[PRACTICE] Incorrect. Net: -${costIncurred} Points.`;
+        } else {
+            feedbackBanner.innerText = timeout ? `⏱ TIMEOUT: Fee applied (-50 Pts).` : `❌ ERROR: Fee applied (-50 Pts).`;
+        }
+    }
+
+    if (rollingScore < 0) rollingScore = 0;
+    document.getElementById('live-score-display').innerText = `${rollingScore} PTS`;
+
+    if (isPracticeMode) {
+        practiceIdx++;
+    } else {
+        choiceLogs.push({
+            trial_number: realIdx + 1,
+            difficulty: currentTrial.difficulty,
+            help_chosen: selectedHelpThisTrial,
+            reaction_time: parseFloat(duration.toFixed(3)),
+            is_correct: isCorrect,
+            running_score: rollingScore
+        });
+        realIdx++;
+    }
+
+    setTimeout(startTrial, 1500);
+}
+
+function transmitFinalPayload() {
+    fetch("{% url 'experiment:submit_task' %}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+        body: JSON.stringify({ trials: choiceLogs })
+    })
+    .then(res => {
+        if (!res.ok) return res.json().then(err => { throw new Error(err.message); });
+        return res.json();
+    })
+    .then(data => {
+        if (data.redirect_url) window.location.href = data.redirect_url;
+    })
+    .catch(error => {
+        console.error(error);
+    });
+}
+</script>
+</body>
+</html>
