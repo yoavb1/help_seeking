@@ -17,4 +17,6 @@ urlpatterns = [
     path('thank-you/', views.thank_you_view, name='thank_you'),
     path('export/trials-csv/',views.download_trials_csv, name="download_trials_csv",),
     path('admin-dashboard/', views.analytics_dashboard, name='analytics_dashboard'),
+    path('admin-dashboard/', views.analytics_dashboard, name='analytics_dashboard'),
+    path('admin-dashboard/clear-data/', views.clear_all_experiment_data, name='clear_all_experiment_data'),
 ]

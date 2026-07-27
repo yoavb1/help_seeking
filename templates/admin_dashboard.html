@@ -29,16 +29,32 @@
 <body>
 
 <div class="container-fluid py-4 px-4">
-    <!-- Header Title & Export Button -->
+
+    <!-- Django Flash Messages Alert Banners -->
+    {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm" role="alert">
+                    <i class="fas fa-info-circle me-2"></i> {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Header Title & Action Buttons -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold text-dark mb-0"><i class="fas fa-chart-line text-primary me-2"></i>Participant Actions Dashboard</h2>
             <p class="text-muted small mb-0">Monitor trial metrics, manipulation checks, demographic profiles, and export complete datasets</p>
         </div>
-        <div>
+        <div class="d-flex gap-2">
             <a href="{% url 'experiment:download_trials_csv' %}" class="btn btn-success font-weight-bold shadow-sm">
                 <i class="fas fa-file-csv me-2"></i> Export Complete Data (CSV)
             </a>
+            <button type="button" class="btn btn-danger font-weight-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#clearDataModal">
+                <i class="fas fa-trash-alt me-2"></i> Reset/Clear All Data
+            </button>
         </div>
     </div>
 
@@ -234,6 +250,38 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<!-- Clear Data Safety Confirmation Modal -->
+<div class="modal fade" id="clearDataModal" tabindex="-1" aria-labelledby="clearDataModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold" id="clearDataModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i> Confirm Complete Data Deletion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-dark fw-bold mb-2">Are you sure you want to delete all experiment records?</p>
+                <p class="text-muted small mb-0">
+                    This action will permanently wipe all <strong>ChoiceExperimentSession</strong> and <strong>ParticipantTrial</strong> entries from the database.
+                </p>
+                <div class="alert alert-warning border-warning mt-3 mb-0 small">
+                    <i class="fas fa-shield-alt me-1"></i> Your superuser account, database schema, and administrative setup will remain completely unaffected.
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{% url 'experiment:clear_all_experiment_data' %}" method="POST" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger fw-bold">
+                        <i class="fas fa-trash-alt me-1"></i> Yes, Delete All Data
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </div>

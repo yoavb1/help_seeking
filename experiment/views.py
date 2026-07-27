@@ -9,7 +9,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.http import HttpResponse
 import csv
-
+from django.db import transaction
+from django.contrib import messages
+from django.shortcuts import redirect
+from django.views.decorators.http import require_POST
 from .models import ChoiceExperimentSession, ParticipantTrial
 
 # 💡 Set your Prolific Completion Code here:
@@ -558,3 +561,23 @@ def download_trials_csv(request):
         ])
 
     return response
+
+@staff_member_required
+@require_POST
+def clear_all_experiment_data(request):
+    """Deletes all session and trial records without dropping schema or user accounts."""
+    try:
+        with transaction.atomic():
+            # ParticipantTrial records will auto-delete via CASCADE if foreign key is set,
+            # but deleting both explicitly guarantees clean resets across all DB engines.
+            trial_count, _ = ParticipantTrial.objects.all().delete()
+            session_count, _ = ChoiceExperimentSession.objects.all().delete()
+
+        messages.success(
+            request,
+            f"Successfully cleared all data: {session_count} sessions and {trial_count} trials removed."
+        )
+    except Exception as e:
+        messages.error(request, f"Failed to clear data: {str(e)}")
+
+    return redirect('experiment:analytics_dashboard')
