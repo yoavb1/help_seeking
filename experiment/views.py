@@ -1,50 +1,121 @@
-from django.http import JsonResponse
-from .models import ChoiceExperimentSession, ParticipantTrial
 import json
-from django.urls import reverse
+import os
+import random
+from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
-from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import Count, Avg, Sum, Q
+from django.db.models import Avg, Count, Q, Sum
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.http import HttpResponse
+import csv
+
+from .models import ChoiceExperimentSession, ParticipantTrial
+
+# 💡 Set your Prolific Completion Code here:
+PROLIFIC_COMPLETION_CODE = "C1234XYZ"
+
+
+def load_and_shuffle_questions(count, filename='questions.json', difficulty=None):
+    """Utility to load questions from JSON, map difficulty codes (E/M/H), and shuffle."""
+    json_path = os.path.join(
+        settings.BASE_DIR, 'experiment', 'data', filename
+    )
+
+    if not os.path.exists(json_path):
+        return []
+
+    with open(json_path, 'r', encoding='utf-8') as f:
+        all_questions = json.load(f)
+
+    # Normalize requested difficulty filter to JSON single-letter code
+    if difficulty:
+        diff_map = {'easy': 'E', 'medium': 'M', 'hard': 'H', 'E': 'E', 'M': 'M', 'H': 'H'}
+        target_diff = diff_map.get(str(difficulty).lower(), str(difficulty).upper())
+        all_questions = [
+            q for q in all_questions if q.get('difficulty') == target_diff
+        ]
+
+    if not all_questions:
+        return []
+
+    random.shuffle(all_questions)
+
+    selected_questions = []
+    for i in range(count):
+        q = dict(all_questions[i % len(all_questions)])
+        q['number'] = i + 1  # Assign trial number 1..N
+        selected_questions.append(q)
+
+    return selected_questions
 
 
 def onboarding_view(request):
-    """Handles the 5-screen onboarding sequence."""
+    """Handles initial participant entry, Prolific ID capture, and onboarding."""
     if 'experiment_sid' not in request.session:
-        import random
         assigned_condition = random.choice(['prestige', 'dominance'])
-        new_session = ChoiceExperimentSession.objects.create(condition=assigned_condition)
+        if assigned_condition == 'dominance':
+            style = 'Leads with an assertive and forceful approach, taking direct control over decisions and group behavior.' if assigned_condition == 'Dominance' else '' if assigned_condition == 'Prestige' else ''
+        elif assigned_condition == 'prestige':
+            style = 'Leads through respect and admiration, sharing valuable knowledge, skills, and expertise.'
+        else:
+            style = ''
+
+        # Capture Prolific parameters from GET query string
+        prolific_pid = request.GET.get('PROLIFIC_PID', None)
+        study_id = request.GET.get('STUDY_ID', None)
+        prolific_session_id = request.GET.get('SESSION_ID', None)
+
+        new_session = ChoiceExperimentSession.objects.create(
+            condition=assigned_condition,
+            prolific_pid=prolific_pid,
+            study_id=study_id,
+            prolific_session_id=prolific_session_id,
+        )
         request.session['experiment_sid'] = str(new_session.session_id)
         request.session['onboarding_step'] = 1
+        request.session['style'] = style
 
     session_id = request.session.get('experiment_sid')
-    experiment_session = get_object_or_404(ChoiceExperimentSession, session_id=session_id)
+    experiment_session = get_object_or_404(
+        ChoiceExperimentSession, session_id=session_id
+    )
 
     if request.method == "POST":
         current_step = request.session.get('onboarding_step', 1)
-        if current_step >= 5:
-            # Onboarding finished! Redirect straight to dashboard for practice run
+        if current_step >= 6:
+            # Onboarding finished! Redirect to dashboard for practice run
             return redirect('experiment:practice_run')
         else:
             request.session['onboarding_step'] = current_step + 1
             return redirect('experiment:onboarding')
 
     step = request.session.get('onboarding_step', 1)
-    return render(request, 'experiment/onboarding.html', {
-        'step': step,
-        'condition': experiment_session.condition
-    })
+    return render(
+        request,
+        'experiment/onboarding.html',
+        {'step': step, 'condition': experiment_session.condition},
+    )
 
 
 def practice_run_view(request):
-    """Loads the dashboard layout configured as an unlogged 5-trial practice run."""
+    """Loads the dashboard layout configured as an unlogged practice run with dynamic questions."""
     session_id = request.session.get('experiment_sid')
-    session = get_object_or_404(ChoiceExperimentSession, session_id=session_id)
+    session = get_object_or_404(
+        ChoiceExperimentSession, session_id=session_id
+    )
+
+    max_trials = getattr(settings, 'EXPERIMENT_PRACTICE_TRIALS', 5)
+    questions = load_and_shuffle_questions(count=max_trials, filename='questions_practice.json')
 
     context = {
         'session': session,
-        'is_practice': True,  # 🌟 CRITICAL FLAG: Tells JavaScript this is a practice run
-        'max_trials': 2,  # Short practice session length
+        'style': request.session['style'],
+        'is_practice': True,
+        'max_trials': max_trials,
+        'questions_json': json.dumps(questions),  # Passed as JSON string
     }
+
     return render(request, 'experiment/dashboard.html', context)
 
 
@@ -56,23 +127,94 @@ def ready_alert_view(request):
 
 
 def dashboard_view(request):
-    """Loads the dashboard layout configured as the live 50-trial experiment."""
+    """Loads the dashboard layout configured as the live experiment with dynamic questions."""
     session_id = request.session.get('experiment_sid')
-    session = get_object_or_404(ChoiceExperimentSession, session_id=session_id)
+    session = get_object_or_404(
+        ChoiceExperimentSession, session_id=session_id
+    )
+
+    max_trials = getattr(settings, 'EXPERIMENT_LIVE_TRIALS', 50)
+    questions = load_and_shuffle_questions(count=max_trials, filename='questions_live.json')
 
     context = {
         'session': session,
-        'is_practice': False,  # 🌟 CRITICAL FLAG: Tells JavaScript this counts!
-        'max_trials': 5,  # Full experiment task length
+        'is_practice': False,
+        'style': request.session['style'],
+        'max_trials': max_trials,
+        'time_per_trial': getattr(settings, 'TIME_LIMIT', 20),
+        'questions_json': json.dumps(questions),  # Passed as JSON string
     }
     return render(request, 'experiment/dashboard.html', context)
 
 
+def submit_trial(request):
+    """Processes a single trial result asynchronously after each screen."""
+    if request.method == "POST":
+        session_id = request.session.get("experiment_sid")
+        session = get_object_or_404(
+            ChoiceExperimentSession, session_id=session_id
+        )
+
+        try:
+            # Parse the single trial dictionary sent from JS
+            t = json.loads(request.body)
+
+            diff_map = {
+                "EASY": "E",
+                "MEDIUM": "M",
+                "HARD": "H",
+                "E": "E",
+                "M": "M",
+                "H": "H",
+            }
+            raw_diff = str(t.get("difficulty", "E")).upper()
+            diff_code = diff_map.get(raw_diff, "E")
+
+            is_correct = t.get("is_correct", False)
+            help_choice = t.get("help_chosen", "none")
+            advisor_role = t.get("advisor_role", "none")
+
+            # 1. Save THIS trial immediately to the DB
+            ParticipantTrial.objects.create(
+                session=session,
+                trial_number=t.get("trial_number"),
+                difficulty=diff_code,
+                help_chosen=help_choice,
+                advisor_role=advisor_role,
+                reaction_time=t.get("reaction_time", 0.0),
+                is_correct=is_correct,
+                running_score=t.get("running_score", 0),
+            )
+
+            # 2. Increment parent session metrics incrementally
+            if is_correct:
+                session.total_score = (session.total_score or 0) + 100
+            if help_choice != "none":
+                session.total_help_sought = (session.total_help_sought or 0) + 1
+            if help_choice == "human":
+                session.human_clicks = (session.human_clicks or 0) + 1
+            elif help_choice == "ai":
+                session.ai_clicks = (session.ai_clicks or 0) + 1
+
+            session.save()
+
+            return JsonResponse({"status": "success", "message": "Trial logged"})
+
+        except Exception as e:
+            return JsonResponse(
+                {"status": "error", "message": str(e)}, status=400
+            )
+
+    return JsonResponse({"status": "invalid method"}, status=405)
+
+
 def submit_task(request):
-    """Processes the final array stack of 50 trials asynchronously via AJAX."""
+    """Processes trial results asynchronously via AJAX."""
     if request.method == "POST":
         session_id = request.session.get('experiment_sid')
-        session = get_object_or_404(ChoiceExperimentSession, session_id=session_id)
+        session = get_object_or_404(
+            ChoiceExperimentSession, session_id=session_id
+        )
 
         try:
             data = json.loads(request.body)
@@ -83,11 +225,24 @@ def submit_task(request):
             human_cnt = 0
             ai_cnt = 0
 
-            # Inside your submit_task view function in views.py:
+            # Mapping table to handle E, M, H alongside full string names
+            diff_map = {
+                'EASY': 'E', 'MEDIUM': 'M', 'HARD': 'H',
+                'E': 'E', 'M': 'M', 'H': 'H'
+            }
+
+            trial_objects = []
+
             for t in trials_data:
                 is_correct = t.get('is_correct', False)
                 help_choice = t.get('help_chosen', 'none')
+                advisor_role = t.get('advisor_role', 'none')
 
+                # Normalize difficulty code safely
+                raw_diff = str(t.get('difficulty', 'E')).upper()
+                diff_code = diff_map.get(raw_diff, 'E')
+
+                # Tally metrics
                 if is_correct:
                     total_score += 100
                 if help_choice != 'none':
@@ -97,126 +252,218 @@ def submit_task(request):
                 elif help_choice == 'ai':
                     ai_cnt += 1
 
-                # WRITE THE INDIVIDUAL TRIAL DATA MATRIX LOG WITH RUNNING SCORE
-                ParticipantTrial.objects.create(
-                    session=session,
-                    trial_number=t.get('trial_number'),
-                    difficulty=t.get('difficulty'),
-                    help_chosen=help_choice,
-                    reaction_time=t.get('reaction_time', 0.0),
-                    is_correct=is_correct,
-                    running_score=t.get('running_score', 0)  # SAVE LOG DIRECTLY HERE
+                # Build model instance for bulk insert
+                trial_objects.append(
+                    ParticipantTrial(
+                        session=session,
+                        trial_number=t.get('trial_number'),
+                        difficulty=diff_code,
+                        help_chosen=help_choice,
+                        advisor_role=advisor_role,
+                        reaction_time=t.get('reaction_time', 0.0),
+                        is_correct=is_correct,
+                        running_score=t.get('running_score', 0),
+                    )
                 )
 
-            # Save aggregated variables back onto parent session row
+            # Save all trials in a single DB query
+            ParticipantTrial.objects.bulk_create(trial_objects)
+
+            # Update aggregated metrics on parent session
             session.total_score = total_score
+
             session.total_help_sought = total_help
             session.human_clicks = human_cnt
             session.ai_clicks = ai_cnt
             session.save()
 
-            return JsonResponse({
-                'status': 'success',
-                'redirect_url': reverse('experiment:survey')
-            })
+            return JsonResponse(
+                {
+                    'status': 'success',
+                    'redirect_url': reverse('experiment:survey'),
+                }
+            )
 
         except Exception as e:
-            # Captures database or JSON data processing errors cleanly
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+            return JsonResponse(
+                {'status': 'error', 'message': str(e)}, status=400
+            )
 
     return redirect('experiment:dashboard')
 
 
 def survey_view(request):
-    """Page 1: Handles capturing the mediation metrics (Likert Scales)."""
+    """Handles capturing the updated Likert survey evaluation metrics."""
     session_id = request.session.get('experiment_sid')
-    session = get_object_or_404(ChoiceExperimentSession, session_id=session_id)
+    session = get_object_or_404(
+        ChoiceExperimentSession, session_id=session_id
+    )
 
     if request.method == "POST":
-        image_cost = request.POST.get('image_cost')
-        closeness = request.POST.get('closeness')
+        status_reduction = request.POST.get('status_reduction')
+        incompetent = request.POST.get('incompetent')
+        inexperienced = request.POST.get('inexperienced')
+        lesser = request.POST.get('lesser')
+        org_status_hurt = request.POST.get('org_status_hurt')
+        held_against = request.POST.get('held_against')
 
-        # Save Page 1 metrics
-        session.image_cost_rating = int(image_cost) if image_cost else None
-        session.closeness_rating = int(closeness) if closeness else None
+        session.status_reduction = (
+            int(status_reduction) if status_reduction else None
+        )
+        session.incompetent_rating = int(incompetent) if incompetent else None
+        session.inexperienced_rating = (
+            int(inexperienced) if inexperienced else None
+        )
+        session.lesser_rating = int(lesser) if lesser else None
+        session.org_status_hurt_rating = (
+            int(org_status_hurt) if org_status_hurt else None
+        )
+        session.held_against_rating = (
+            int(held_against) if held_against else None
+        )
         session.save()
 
-        # Redirect seamlessly to Page 2
         return redirect('experiment:demographics')
 
     return render(request, 'experiment/survey.html')
 
 
 def demographics_view(request):
-    """Page 2: Handles capturing age and gender diagnostics."""
+    """Handles capturing age and gender diagnostics."""
     session_id = request.session.get('experiment_sid')
-    session = get_object_or_404(ChoiceExperimentSession, session_id=session_id)
+    session = get_object_or_404(
+        ChoiceExperimentSession, session_id=session_id
+    )
 
     if request.method == "POST":
         age = request.POST.get('age')
         gender = request.POST.get('gender')
 
-        # Save Page 2 metrics
         session.participant_age = int(age) if age else None
         session.participant_gender = gender
         session.save()
 
-        # All done! Move to the final landing screen
         return redirect('experiment:thank_you')
 
     return render(request, 'experiment/demographics.html')
 
+
 def thank_you_view(request):
-    """Final study debrief and terminal termination endpoint."""
-    # Clean the session token so refreshing doesn't corrupt data pipelines
+    """Final study debrief screen providing the Prolific completion link."""
+    session_id = request.session.get('experiment_sid')
+    session = (
+        ChoiceExperimentSession.objects.filter(session_id=session_id).first()
+        if session_id
+        else None
+    )
+
+    prolific_redirect_url = f"https://app.prolific.com/submissions/complete?cc={PROLIFIC_COMPLETION_CODE}"
+
     if 'experiment_sid' in request.session:
         del request.session['experiment_sid']
-    return render(request, 'experiment/thank_you.html')
+
+    context = {
+        'completion_code': PROLIFIC_COMPLETION_CODE,
+        'prolific_redirect_url': prolific_redirect_url,
+        'session': session,
+    }
+    return render(request, 'experiment/thank_you.html', context)
+
+def admin_dashboard(request):
+    trials = ParticipantTrial.objects.select_related("session").all()
+
+    # Calculate summary metrics
+    total_count = trials.count()
+    correct_count = trials.filter(is_correct=True).count()
+    accuracy_rate = (
+        round((correct_count / total_count) * 100, 1) if total_count > 0 else 0
+    )
+
+    avg_rt = trials.aggregate(Avg("reaction_time"))["reaction_time__avg"]
+    avg_rt = round(avg_rt, 2) if avg_rt else 0
+
+    ai_count = trials.filter(help_chosen="ai").count()
+    ai_usage_rate = (
+        round((ai_count / total_count) * 100, 1) if total_count > 0 else 0
+    )
+
+    context = {
+        "trials": trials,
+        "accuracy_rate": accuracy_rate,
+        "avg_rt": avg_rt,
+        "ai_usage_rate": ai_usage_rate,
+    }
+    return render(request, "admin_dashboard.html", context)
 
 
 @staff_member_required
-def admin_analytics_dashboard(request):
-    # 1. Grab filter parameters from the request
-    condition_filter = request.GET.get('condition', '')
-    gender_filter = request.GET.get('gender', '')
+# @staff_member_required  # Optional: Restrict access to logged-in admin users only
+def analytics_dashboard(request):
+    trials = ParticipantTrial.objects.select_related('session').all()
 
-    # Base Queryset
-    sessions = ChoiceExperimentSession.objects.all()
+    # Calculate top summary metrics
+    total_count = trials.count()
+    correct_count = trials.filter(is_correct=True).count()
+    accuracy_rate = round((correct_count / total_count) * 100, 1) if total_count > 0 else 0
 
-    # Apply Filters if selected
-    if condition_filter:
-        sessions = sessions.filter(condition=condition_filter)
-    if gender_filter:
-        sessions = sessions.filter(participant_gender=gender_filter)
+    avg_rt = trials.aggregate(Avg('reaction_time'))['reaction_time__avg']
+    avg_rt = round(avg_rt, 2) if avg_rt else 0
 
-    # 2. Distribution Breakdown (Total participants per condition)
-    condition_counts = ChoiceExperimentSession.objects.values('condition').annotate(
-        total=Count('id')
-    ).order_by('condition')  # <-- Fixed here!
-
-    # 3. Aggregated Statistical Calculations
-    stats = sessions.aggregate(
-        total_participants=Count('id'),
-        avg_help_sought=Avg('total_help_sought'),
-        total_human_clicks=Sum('human_clicks'),
-        total_ai_clicks=Sum('ai_clicks'),
-        avg_image_cost=Avg('image_cost_rating'),
-        avg_closeness=Avg('closeness_rating'),
-        avg_age=Avg('participant_age')
-    )
-
-    # 4. Extract distinct criteria for filtering dropdowns
-    distinct_conditions = ChoiceExperimentSession.objects.values_list('condition', flat=True).distinct()
-    distinct_genders = ChoiceExperimentSession.objects.values_list('participant_gender', flat=True).distinct().exclude(
-        participant_gender__isnull=True)
+    ai_count = trials.filter(help_chosen='ai').count()
+    ai_usage_rate = round((ai_count / total_count) * 100, 1) if total_count > 0 else 0
 
     context = {
-        'sessions': sessions,
-        'condition_counts': condition_counts,
-        'stats': stats,
-        'distinct_conditions': distinct_conditions,
-        'distinct_genders': distinct_genders,
-        'selected_condition': condition_filter,
-        'selected_gender': gender_filter,
+        'trials': trials,
+        'accuracy_rate': accuracy_rate,
+        'avg_rt': avg_rt,
+        'ai_usage_rate': ai_usage_rate,
     }
-    return render(request, 'experiment/admin_analytics.html', context)
+    return render(request, 'admin_dashboard.html', context)
+
+
+def download_trials_csv(request):
+    # 1. Set response headers for file download
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = (
+        'attachment; filename="participant_trials_data.csv"'
+    )
+
+    writer = csv.writer(response)
+
+    # 2. Header row
+    writer.writerow([
+        "Session ID",
+        "Condition",
+        "Trial Number",
+        "Difficulty",
+        "Help Chosen",
+        "Advisor Role",
+        "Reaction Time (s)",
+        "Is Correct",
+        "Running Score",
+    ])
+
+    # 3. Fetch all trials from database
+    trials = ParticipantTrial.objects.select_related("session").all()
+
+    # 4. Write row for each trial
+    for t in trials:
+        # Get condition safely from parent session (handling fallback names)
+        session_id = t.session.session_id if t.session else "N/A"
+        condition = (
+            getattr(t.session, "condition", "N/A") if t.session else "N/A"
+        )
+
+        writer.writerow([
+            session_id,
+            condition,
+            t.trial_number,
+            t.difficulty,
+            t.help_chosen,
+            t.advisor_role,
+            t.reaction_time,
+            t.is_correct,
+            t.running_score,
+        ])
+
+    return response

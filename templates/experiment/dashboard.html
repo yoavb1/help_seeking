@@ -4,25 +4,28 @@
     <meta charset="UTF-8">
     <title>Global Operations Logistics Engine</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-        body { background: #f8f9fa; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        .dashboard-container { max-width: 950px; margin: 40px auto; }
-        .card { border: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .timer-badge { font-size: 1.2rem; min-width: 90px; text-align: center; }
-        .lane-box { background: #f1f3f5; border-radius: 6px; padding: 15px; border: 2px solid transparent; }
-        .assistance-panel { background: #e8f4fd; border-left: 4px solid #007bff; border-radius: 4px; }
-        #central-feedback-banner { font-size: 1.3rem; transition: all 0.2s ease-in-out; }
-        .practice-banner { background: #fff3cd; color: #856404; border-bottom: 3px solid #ffeeba; font-weight: bold; }
-        .vignette-reminder { border-left: 4px solid #6c757d; background: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 15px; font-style: italic; }
+        body { background: #f8f9fa; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #2a2a2a; }
+        .dashboard-container { max-width: 950px; margin: 30px auto; }
+        .card { border: none; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .timer-badge { font-size: 1.1rem; min-width: 85px; text-align: center; }
+        .allocation-box { background: #f8f9fa; border-radius: 8px; padding: 15px; border: 1px solid #dee2e6; }
+        .assistance-panel { background: #f0f7ff; border-left: 5px solid #007bff; border-radius: 8px; }
+        #central-feedback-banner { font-size: 1.1rem; transition: all 0.2s ease-in-out; }
+        .practice-banner { background: #fff3cd; color: #856404; border-bottom: 2px solid #ffeeba; font-weight: bold; }
+        .vignette-reminder { border-left: 4px solid #6c757d; background: #f1f3f5; padding: 18px; border-radius: 6px; margin-top: 15px; font-size: 0.95rem; line-height: 1.5; }
+        .instruction-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
+<!-- Django Hidden Data Bridge -->
 <div id="django-backend-config"
      data-condition="{{ session.condition }}"
      data-is-practice="{% if is_practice %}true{% else %}false{% endif %}"
-     data-max-trials="{{ max_trials|default:3 }}"
-     data-time-per-trial="{{ time_per_trial|default:15 }}">
+     data-max-trials="{{ max_trials|default:5 }}"
+     data-time-per-trial="{{ time_per_trial|default:20 }}">
 </div>
 
 <div class="text-center py-2 practice-banner text-uppercase small shadow-sm" id="mode-alert-strip">
@@ -30,19 +33,20 @@
 </div>
 
 <div class="container dashboard-container" id="main-workspace-wrapper">
-    <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white rounded shadow-sm">
+    <!-- Header Summary Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white rounded shadow-sm border">
         <div>
-            <h4 class="font-weight-bold mb-0 text-dark">Logistics Routing Core</h4>
-            <small class="text-muted">Assigned Authority Vector: <strong class="text-uppercase text-primary">{{ session.condition }} Leadership</strong></small>
+            <h5 class="font-weight-bold mb-0 text-dark"><i class="fas fa-boxes text-primary mr-2"></i>Logistics Operations Workspace</h5>
+            <small class="text-muted">Role: <strong class="text-dark">Team Operations Leader</strong> | Style Profile: <strong class="text-uppercase text-primary">{{ style }}</strong></small>
         </div>
         <div class="d-flex align-items-center text-center">
             <div class="px-3 border-right">
                 <span class="text-muted small d-block text-uppercase font-weight-bold" id="progress-label">Task Run</span>
-                <h4 class="mb-0 font-weight-bold text-dark" id="trial-counter">1 / 10</h4>
+                <h5 class="mb-0 font-weight-bold text-dark" id="trial-counter">1 / 5</h5>
             </div>
             <div class="px-3 border-right">
-                <span class="text-muted small d-block text-uppercase font-weight-bold">Total Points</span>
-                <h4 class="mb-0 font-weight-bold text-success" id="live-score-display">0 PTS</h4>
+                <span class="text-muted small d-block text-uppercase font-weight-bold">Total Score</span>
+                <h5 class="mb-0 font-weight-bold text-success" id="live-score-display">0 PTS</h5>
             </div>
             <div class="px-3">
                 <span class="text-muted small d-block text-uppercase font-weight-bold">Timer</span>
@@ -51,134 +55,224 @@
         </div>
     </div>
 
+    <!-- Live Feedback Banner -->
     <div class="alert text-center font-weight-bold d-none mb-4 py-3" id="central-feedback-banner"></div>
 
+    <!-- Quick Task Context Header -->
+    <div class="card p-3 mb-4 bg-white border">
+        <h6 class="font-weight-bold text-dark mb-1"><i class="fas fa-info-circle text-info mr-2"></i>Manager Verification Responsibility</h6>
+        <p class="text-secondary small mb-0">
+            As Team Leader, you must verify and allocate shipment container units across three supply routes (Air Freight, Ocean Freight, and Overland Rail) to meet exact operational parameters.
+        </p>
+    </div>
+
+    <!-- Main Parameter & Entry Form -->
     <div class="card p-4 mb-4" id="task-card">
-        <h5 class="font-weight-bold mb-3 text-info">Current Trial Parameters</h5>
+        <h6 class="font-weight-bold mb-3 text-dark text-uppercase small"><i class="fas fa-sliders-h mr-2 text-primary"></i>Current Shipment Log Parameters</h6>
+
         <div class="p-3 bg-light rounded border mb-4">
-            <p class="mb-1"><strong>Total Shipment Target:</strong> <span class="badge badge-primary font-weight-bold" id="target-cargo">15 Containers</span></p>
-            <p class="mb-0 text-secondary small" id="constraint-text-box">Loading routing parameters...</p>
+            <p class="mb-2"><strong>Target Shipment Total:</strong> <span class="badge badge-primary font-weight-bold px-3 py-1" id="target-cargo">15 Containers</span></p>
+            <div class="text-secondary small" id="constraint-text-box">Loading routing parameters...</div>
         </div>
 
         <form id="routing-form">
             <div class="row text-center">
-                <div class="col-md-4">
-                    <div class="lane-box">
-                        <label class="font-weight-bold text-uppercase small text-muted">Air Freight Allocation</label>
+                <div class="col-md-4 mb-3">
+                    <div class="allocation-box">
+                        <label class="font-weight-bold text-uppercase small text-muted d-block mb-2">Air Freight Allocation</label>
                         <input type="number" class="form-control form-control-lg text-center font-weight-bold" id="input-air" value="0" min="0">
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="lane-box">
-                        <label class="font-weight-bold text-uppercase small text-muted">Ocean Freight Allocation</label>
+                <div class="col-md-4 mb-3">
+                    <div class="allocation-box">
+                        <label class="font-weight-bold text-uppercase small text-muted d-block mb-2">Ocean Freight Allocation</label>
                         <input type="number" class="form-control form-control-lg text-center font-weight-bold" id="input-sea" value="0" min="0">
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="lane-box">
-                        <label class="font-weight-bold text-uppercase small text-muted">Overland Rail Allocation</label>
+                <div class="col-md-4 mb-3">
+                    <div class="allocation-box">
+                        <label class="font-weight-bold text-uppercase small text-muted d-block mb-2">Overland Rail Allocation</label>
                         <input type="number" class="form-control form-control-lg text-center font-weight-bold" id="input-rail" value="0" min="0">
                     </div>
                 </div>
             </div>
 
-            <div class="text-center mt-4">
-                <button type="button" class="btn btn-success btn-lg px-5 font-weight-bold" id="btn-submit-allocation">Submit Allocation</button>
+            <div class="text-center mt-3">
+                <button type="button" class="btn btn-success btn-lg px-5 font-weight-bold shadow-sm" id="btn-submit-allocation">
+                    <i class="fas fa-check-circle mr-2"></i>Authorize Allocation
+                </button>
             </div>
         </form>
     </div>
 
-    <div class="card p-4 assistance-panel" id="help-card">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h6 class="font-weight-bold mb-1 text-primary">Need Optimization Assistance? <span class="badge badge-danger ml-2">Cost: -50 PTS</span></h6>
-                <p class="text-muted small mb-0">Consulting an assistant automates the layout grid but subtracts a premium operational fee from your score balance.</p>
-            </div>
-            <div class="btn-group">
-                <button type="button" class="btn btn-outline-primary font-weight-bold px-3" id="btn-help-human">Consult Director Vance</button>
-                <button type="button" class="btn btn-outline-info font-weight-bold px-3" id="btn-help-ai">Deploy Routing-AI Script</button>
-            </div>
+    <!-- Decision Support / Consultation Panel -->
+    <div class="card p-4 assistance-panel text-center shadow-sm" id="help-card" style="margin: 0 auto; width: 100%;">
+
+        <!-- Header & Description -->
+        <div class="mb-3 text-center">
+            <h4 class="font-weight-bold mb-2 text-primary">
+                <i class="fas fa-hands-helping mr-2"></i>Consultation Assistance Available
+                <span class="badge badge-danger ml-2 font-weight-normal" style="font-size: 0.9rem;">Cost: -50 PTS</span>
+            </h4>
+            <p class="text-muted mb-0 mx-auto" style="max-width: 650px; font-size: 1.05rem;">
+                As Team Leader, you may choose to delegate and request assistance from either your team member or the automated AI script.
+            </p>
         </div>
-        <div class="mt-2 text-danger font-weight-bold small d-none" id="advisor-confirmation-tag">
-            ⚠️ Assistant deployed. A 50-point surcharge will be applied upon submission.
+
+        <!-- Prominent Centered Buttons Container -->
+        <div class="d-flex justify-content-center align-items-center flex-wrap my-3">
+            <button type="button"
+                    class="btn btn-success font-weight-bold shadow-sm m-2"
+                    id="btn-help-human"
+                    style="padding: 16px 28px; font-size: 1.25rem; min-width: 260px;">
+                <i class="fas fa-user-tie mr-2"></i> Consult Participant 103
+            </button>
+
+            <button type="button"
+                    class="btn btn-primary font-weight-bold shadow-sm m-2"
+                    id="btn-help-ai"
+                    style="padding: 16px 28px; font-size: 1.25rem; min-width: 260px;">
+                <i class="fas fa-robot mr-2"></i> Deploy Routing AI
+            </button>
+        </div>
+
+        <!-- Confirmation Tag -->
+        <div class="mt-2 text-danger font-weight-bold d-none text-center" id="advisor-confirmation-tag" style="font-size: 0.95rem;">
+            <i class="fas fa-exclamation-triangle mr-1"></i> Support deployed: Allocation auto-populated. A 50-point fee will apply upon submission.
         </div>
     </div>
 </div>
 
+<!-- Interstitial Modal / Transition Screen -->
 <div class="container my-5 d-none" id="interstitial-screen">
-    <div class="card p-5 max-width-700 mx-auto shadow border-0 text-center">
-        <h3 class="font-weight-bold text-dark id-title mb-3">Initializing System Core</h3>
-        <p class="text-muted text-description mb-4"></p>
+    <div class="card p-5 max-width-700 mx-auto shadow border-0 text-center" style="max-width: 720px;">
+        <h3 class="font-weight-bold text-dark id-title mb-3">Initializing Workspace</h3>
+        <div class="text-secondary text-description text-left mb-3"></div>
         <div class="vignette-reminder text-left d-none" id="vignette-reminder-box"></div>
         <div class="mt-4">
-            <button class="btn btn-primary btn-lg px-5 font-weight-bold" id="btn-proceed-step">Proceed</button>
+            <button class="btn btn-primary btn-lg px-5 font-weight-bold shadow-sm" id="btn-proceed-step">
+                Proceed <i class="fas fa-arrow-right ml-2"></i>
+            </button>
         </div>
     </div>
 </div>
 
 <script>
-// Parse data elements from safety container to eliminate formatting/syntax crashes
+// 1. Read configuration from Django Data Bridge
 const dataConfig = document.getElementById('django-backend-config');
 const managerCondition = dataConfig.getAttribute('data-condition');
 const isViewPractice = dataConfig.getAttribute('data-is-practice') === 'true';
-const dynamicMaxTrials = parseInt(dataConfig.getAttribute('data-max-trials'), 10) || 3;
-const maxTimePerTrial = parseInt(dataConfig.getAttribute('data-time-per-trial'), 10) || 15;
+const dynamicMaxTrials = parseInt(dataConfig.getAttribute('data-max-trials'), 10) || 5;
+const maxTimePerTrial = parseInt(dataConfig.getAttribute('data-time-per-trial'), 10) || 20;
 
-const totalPracticeTrials = isViewPractice ? dynamicMaxTrials : 0;
-const totalRealTrials     = !isViewPractice ? dynamicMaxTrials : 3;
+// 2. Read questions JSON payload passed from Django view
+const backendQuestions = {{ questions_json|safe }};
+
+// Helper function updated to handle nested format (E, M, H, constraints, evaluated_values, advisor_recommendation)
+function parseQuestion(qData, index) {
+    // Check nested constraints object or fallback to top-level keys
+    const constraints = qData.constraints || {};
+    const rules = constraints.rules || {};
+    const evalVals = constraints.evaluated_values || {};
+    const advRec = (qData.advisor_recommendation && qData.advisor_recommendation.cargo_values) || {};
+
+    return {
+        number: qData.id || qData.number || (index + 1),
+        difficulty: qData.difficulty || 'E',
+        target: constraints.target_units !== undefined ? constraints.target_units : (qData.target || 15),
+
+        air_rule: rules.air_rule || qData.air_rule || "Must equal exactly 5.",
+        sea_rule: rules.sea_rule || qData.sea_rule || "Must equal exactly 5.",
+        rail_rule: rules.rail_rule || qData.rail_rule || "Must equal exactly 5.",
+
+        // Correct solution values (checks evaluated_values first)
+        sol_air: evalVals.air !== undefined ? evalVals.air : (qData.sol_air !== undefined ? qData.sol_air : 5),
+        sol_sea: evalVals.ocean !== undefined ? evalVals.ocean : (evalVals.sea !== undefined ? evalVals.sea : (qData.sol_sea !== undefined ? qData.sol_sea : 5)),
+        sol_rail: evalVals.rail !== undefined ? evalVals.rail : (qData.sol_rail !== undefined ? qData.sol_rail : 5),
+
+        // Advisor recommendation values (if advisor gives different populated inputs)
+        adv_air: advRec.air !== undefined ? advRec.air : (evalVals.air !== undefined ? evalVals.air : 5),
+        adv_sea: advRec.ocean !== undefined ? advRec.ocean : (evalVals.ocean !== undefined ? evalVals.ocean : 5),
+        adv_rail: advRec.rail !== undefined ? advRec.rail : (evalVals.rail !== undefined ? evalVals.rail : 5),
+
+        advisor_role: qData.advisor_role || 'peer'
+    };
+}
+
+// Build trial dataset arrays from Django data
+let dataset = [];
+if (backendQuestions && backendQuestions.length > 0) {
+    dataset = backendQuestions.map((q, idx) => parseQuestion(q, idx));
+} else {
+    // Fallback if questions JSON is not populated
+    for (let i = 1; i <= dynamicMaxTrials; i++) {
+        let diff = (i % 3 === 1) ? 'E' : (i % 3 === 2) ? 'M' : 'H';
+        dataset.push({
+            number: i, difficulty: diff, target: 15,
+            air_rule: "Must equal exactly 5.",
+            sea_rule: "Must equal exactly 5.",
+            rail_rule: "Must equal exactly 5.",
+            sol_air: 5, sol_sea: 5, sol_rail: 5,
+            adv_air: 5, adv_sea: 5, adv_rail: 5,
+            advisor_role: 'peer'
+        });
+    }
+}
 
 let isPracticeMode = isViewPractice;
-let practiceIdx = 0;
-let realIdx = 0;
-
+let currentTrialIndex = 0;
 let timer = null;
 let timeLeft = maxTimePerTrial;
 let trialStartTime = 0;
 let choiceLogs = [];
 let selectedHelpThisTrial = 'none';
+let currentAdvisorRole = 'none';
 let rollingScore = 0;
-
-function generateTrialObject(num, diff) {
-    return {
-        number: num, difficulty: diff, target: 15,
-        air_rule: diff === 'easy' ? "Must equal 5." : "Must be less than 4.",
-        sea_rule: diff === 'easy' ? "Must equal 5." : "Must equal exactly double Air Freight.",
-        rail_rule: diff === 'easy' ? "Must equal 5." : "Takes remaining containers.",
-        sol_air: diff === 'easy' ? 5 : 3, sol_sea: diff === 'easy' ? 5 : 6, sol_rail: diff === 'easy' ? 5 : 6
-    };
-}
-
-// Build core array blocks safely
-const practiceDataset = [];
-for (let i = 1; i <= totalPracticeTrials; i++) {
-    practiceDataset.push(generateTrialObject(i, (i % 2 === 0) ? 'easy' : 'hard'));
-}
-
-const realDataset = [];
-for (let i = 1; i <= totalRealTrials; i++) {
-    realDataset.push(generateTrialObject(i, (i % 2 === 0) ? 'easy' : 'hard'));
-}
-if (realDataset.length > 0) {
-    realDataset.sort(() => Math.random() - 0.5);
-}
 
 window.onload = function() {
     if (isPracticeMode) {
         showInterstitial(
-            "System Check: Practice Phase",
-            `To help you become familiar with the system interfaces, you will now go through ${totalPracticeTrials} untimed practice rounds.`,
-            "Begin Practice Phase",
+            "Welcome, Operations Manager",
+            `<div class="instruction-box">
+                <p><strong>Your Leadership Role & Task Mission:</strong></p>
+                <p>You have been appointed as the <strong>Operations Team Leader</strong>. Your team is responsible for managing global logistics container distribution across Air, Ocean, and Rail routes.</p>
+                <p>As the manager, your task is to review routing constraints and correctly authorize allocations totaling 15 units. To assist you in making decisions under high workload, you have two support resources available:</p>
+                <ul>
+                    <li><strong>Consult Participant 103:</strong> Request allocation assistance from your human team member <em>(85% historical accuracy)</em>.</li>
+                    <li><strong>Deploy Routing AI:</strong> Run an automated optimization script <em>(85% historical accuracy)</em>.</li>
+                </ul>
+                <p class="mb-0"><em>Note: Both support resources offer <strong>equal performance (exactly 85% accuracy)</strong>. Deploying assistance auto-populates the solution but incurs a <strong>50-point surcharge</strong> from your team performance score.</em></p>
+            </div>
+            <div class="p-3 bg-light rounded border mb-3">
+                <p class="mb-1 text-primary font-weight-bold"><i class="fas fa-gift mr-1"></i> Bonus Lottery Opportunity:</p>
+                <p class="small text-muted mb-0">Your final score during the live evaluation directly impacts your chance to win a <strong>cash bonus reward</strong>! Each point earned acts as a ticket entry into an experimental lottery draw at the end of the study.</p>
+            </div>
+            <p><strong>Practice Phase Rules:</strong> To get familiar with the system interfaces and decision controls, you will first complete <strong>${dataset.length} untimed practice trials.</strong></p>`,
+            `Begin Practice Phase (${dataset.length} Untimed Trials)`,
             false
         );
     } else {
-        showInterstitial(
-            "🚨 Real Evaluation Initializing",
-            `The live evaluation engine is ready. You will execute exactly ${totalRealTrials} evaluation runs under a strict ${maxTimePerTrial}-second constraint.`,
-            "Initialize Live Evaluation",
-            true
-        );
+        showLiveTransitionModal();
     }
 };
+
+function showLiveTransitionModal() {
+    showInterstitial(
+        "🚨 Live Evaluation Phase Initializing",
+        `<div class="instruction-box">
+            <p><strong>Practice Complete! You are now entering the Live Task Phase.</strong></p>
+            <p>As the selected <strong>Team Leader</strong>, your operational decisions and management choices will now be formally evaluated.</p>
+            <ul>
+                <li><strong>Task Rules:</strong> Solve or verify each allocation log correctly for <strong>+100 Points</strong>.</li>
+                <li><strong>Assistance Options:</strong> You may still consult <strong>Participant 103</strong> or deploy the <strong>Routing AI</strong> <em>(both provide equal performance at 85% accuracy)</em>, but each request deducts <strong>50 Points</strong> from your score.</li>
+                <li><strong>Time Limit:</strong> Unlike the practice phase, you now have a strict limit of <strong>${maxTimePerTrial} seconds per trial</strong>!</li>
+                <li><strong>Bonus Lottery Payout:</strong> Your accumulated points at the end of this live run determine your total entries in the study's <strong>additional cash bonus lottery draw</strong>. Higher scores increase your probability of winning!</li>
+            </ul>
+        </div>`,
+        `Start Live Task (${maxTimePerTrial}s Per Trial)`,
+        true
+    );
+}
 
 function showInterstitial(title, description, buttonText, showVignette) {
     document.getElementById('main-workspace-wrapper').classList.add('d-none');
@@ -190,17 +284,20 @@ function showInterstitial(title, description, buttonText, showVignette) {
     container.querySelector('.text-description').innerHTML = description;
 
     let btn = document.getElementById('btn-proceed-step');
-    btn.innerText = buttonText;
+    btn.innerHTML = `${buttonText} <i class="fas fa-arrow-right ml-2"></i>`;
 
     let reminderBox = document.getElementById('vignette-reminder-box');
     if (showVignette) {
         reminderBox.classList.remove('d-none');
         if (managerCondition === 'prestige') {
-            reminderBox.style.borderLeftColor = "#28a745";
-            reminderBox.innerHTML = `<strong>⚠️ Management Style Reminder:</strong> Director Vance expects you to use this task to cultivate your cross-border skills. He welcomes advice lookup actions to assist your decision process.`;
+            reminderBox.style.borderLeft = "5px solid #007bff";
+            reminderBox.innerHTML = `<strong><i class="fas fa-award mr-2 text-primary"></i> Leadership Style Assessment Reminder:</strong><br>You were selected for your leadership profile characterized by <strong>Prestige</strong> (expertise, respect, and collaborative trust). Director Vance expects you to lead by fostering knowledge-sharing and seeking advice whenever necessary to maximize team precision.`;
+        } else if (managerCondition === 'dominance') {
+            reminderBox.style.borderLeft = "5px solid #dc3545";
+            reminderBox.innerHTML = `<strong><i class="fas fa-user-shield mr-2 text-danger"></i> Leadership Style Assessment Reminder:</strong><br>You were selected for your leadership profile characterized by <strong>Dominance</strong> (authority, decisiveness, and total command). Director Vance expects you to lead with complete autonomy and retain absolute control over all managerial decisions.`;
         } else {
-            reminderBox.style.borderLeftColor = "#dc3545";
-            reminderBox.innerHTML = `<strong>⚠️ Management Style Reminder:</strong> Director Vance requires total system autonomy and flawless accuracy. He penalizes any dependency on others.`;
+            reminderBox.style.borderLeft = "5px solid #6c757d";
+            reminderBox.innerHTML = `<strong><i class="fas fa-user-check mr-2 text-secondary"></i> Leadership Style Assessment Reminder:</strong><br>As Team Leader, maintain standard management principles and high individual performance throughout the task.`;
         }
     } else {
         reminderBox.classList.add('d-none');
@@ -215,38 +312,29 @@ function showInterstitial(title, description, buttonText, showVignette) {
 }
 
 function startTrial() {
-    let currentTrial;
-
-    if (isPracticeMode) {
-        if (practiceIdx >= totalPracticeTrials) {
-            isPracticeMode = false;
-            clearInterval(timer);
-            rollingScore = 0;
-            document.getElementById('live-score-display').innerText = "0 PTS";
-            showInterstitial(
-                "🚨 Practice Complete: Real Evaluation Initializing",
-                `Warmup complete. Initializing live tracking metrics.`,
-                "Initialize Live Evaluation",
-                true
-            );
+    if (currentTrialIndex >= dataset.length) {
+        if (isPracticeMode) {
+            window.location.href = "{% url 'experiment:ready_alert' %}";
             return;
-        }
-        currentTrial = practiceDataset[practiceIdx];
-        document.getElementById('mode-alert-strip').className = "text-center py-2 practice-banner text-uppercase small shadow-sm";
-        document.getElementById('mode-alert-strip').innerText = "⚙️ Sandbox Practice Phase (Untimed)";
-        document.getElementById('progress-label').innerText = "Practice Run";
-        document.getElementById('trial-counter').innerText = `${practiceIdx + 1} / ${totalPracticeTrials}`;
-        document.getElementById('timer-display').innerText = "∞ INF";
-    } else {
-        if (realIdx >= totalRealTrials) {
+        } else {
             transmitFinalPayload();
             return;
         }
-        currentTrial = realDataset[realIdx];
+    }
+
+    const currentTrial = dataset[currentTrialIndex];
+
+    if (isPracticeMode) {
+        document.getElementById('mode-alert-strip').className = "text-center py-2 practice-banner text-uppercase small shadow-sm";
+        document.getElementById('mode-alert-strip').innerText = "⚙️ Sandbox Practice Phase (Untimed)";
+        document.getElementById('progress-label').innerText = "Practice Run";
+        document.getElementById('trial-counter').innerText = `${currentTrialIndex + 1} / ${dataset.length}`;
+        document.getElementById('timer-display').innerText = "∞ INF";
+    } else {
         document.getElementById('mode-alert-strip').className = "text-center py-2 bg-danger text-white text-uppercase small font-weight-bold shadow-sm";
         document.getElementById('mode-alert-strip').innerText = "🚨 Live Evaluation Active!";
-        document.getElementById('progress-label').innerText = "Live Evaluation";
-        document.getElementById('trial-counter').innerText = `${realIdx + 1} / ${totalRealTrials}`;
+        document.getElementById('progress-label').innerText = "Live Run";
+        document.getElementById('trial-counter').innerText = `${currentTrialIndex + 1} / ${dataset.length}`;
     }
 
     document.getElementById('central-feedback-banner').classList.add('d-none');
@@ -259,12 +347,19 @@ function startTrial() {
     document.getElementById('input-sea').disabled = false;
     document.getElementById('input-rail').disabled = false;
 
-    document.getElementById('constraint-text-box').innerHTML = `<strong>Air Matrix Constraint:</strong> ${currentTrial.air_rule} | <strong>Ocean Matrix Constraint:</strong> ${currentTrial.sea_rule} | <strong>Rail Constraint:</strong> ${currentTrial.rail_rule}`;
+    document.getElementById('target-cargo').innerText = `${currentTrial.target} Containers`;
+    document.getElementById('constraint-text-box').innerHTML = `
+        <strong>Air Constraint:</strong> ${currentTrial.air_rule} <span class="mx-2">|</span>
+        <strong>Ocean Constraint:</strong> ${currentTrial.sea_rule} <span class="mx-2">|</span>
+        <strong>Rail Constraint:</strong> ${currentTrial.rail_rule}
+    `;
+
     document.getElementById('input-air').value = 0;
     document.getElementById('input-sea').value = 0;
     document.getElementById('input-rail').value = 0;
 
     selectedHelpThisTrial = 'none';
+    currentAdvisorRole = 'none';
     trialStartTime = performance.now();
 
     if (!isPracticeMode) {
@@ -289,10 +384,13 @@ function triggerAdvisor(type) {
     if (selectedHelpThisTrial !== 'none') return;
     selectedHelpThisTrial = type;
 
-    let currentTrial = isPracticeMode ? practiceDataset[practiceIdx] : realDataset[realIdx];
-    document.getElementById('input-air').value = currentTrial.sol_air;
-    document.getElementById('input-sea').value = currentTrial.sol_sea;
-    document.getElementById('input-rail').value = currentTrial.sol_rail;
+    let currentTrial = dataset[currentTrialIndex];
+    currentAdvisorRole = type === 'human' ? (currentTrial.advisor_role || 'peer') : 'ai';
+
+    // Auto-populate inputs with advisor recommendation values
+    document.getElementById('input-air').value = currentTrial.adv_air;
+    document.getElementById('input-sea').value = currentTrial.adv_sea;
+    document.getElementById('input-rail').value = currentTrial.adv_rail;
     document.getElementById('advisor-confirmation-tag').classList.remove('d-none');
 }
 
@@ -302,7 +400,8 @@ document.getElementById('btn-submit-allocation').addEventListener('click', () =>
 });
 
 function processSubmission(timeout) {
-    let currentTrial = isPracticeMode ? practiceDataset[practiceIdx] : realDataset[realIdx];
+    console.log("📍 processSubmission called! isPracticeMode:", isPracticeMode);
+    let currentTrial = dataset[currentTrialIndex];
     let endTime = performance.now();
     let duration = (endTime - trialStartTime) / 1000;
 
@@ -333,37 +432,43 @@ function processSubmission(timeout) {
         rollingScore += netGain;
         feedbackBanner.className = "alert alert-success text-center font-weight-bold mb-4 py-3";
         if (isPracticeMode) {
-            feedbackBanner.innerText = `[PRACTICE] Correct! Reward: +${netGain} Points.`;
+            feedbackBanner.innerHTML = `<i class="fas fa-check-circle mr-2"></i>[PRACTICE ONLY] Correct Authorization! Simulated Gain: +${netGain} Points.`;
         } else {
-            feedbackBanner.innerText = costIncurred > 0 ? `✓ SUCCESS: Correct! Net: +50 Points.` : `✓ SUCCESS: Correct! (+100 Points).`;
+            feedbackBanner.innerHTML = costIncurred > 0 ? `<i class="fas fa-check-circle mr-2"></i>✓ SUCCESS: Log Authorized! Net Gain: +50 Lottery Points.` : `<i class="fas fa-check-circle mr-2"></i>✓ SUCCESS: Log Authorized! (+100 Lottery Points).`;
         }
     } else {
         rollingScore -= costIncurred;
         feedbackBanner.className = "alert alert-danger text-center font-weight-bold mb-4 py-3";
         if (isPracticeMode) {
-            feedbackBanner.innerText = `[PRACTICE] Incorrect. Net: -${costIncurred} Points.`;
+            feedbackBanner.innerHTML = `<i class="fas fa-times-circle mr-2"></i>[PRACTICE ONLY] Incorrect Allocation. Simulated Net: -${costIncurred} Points.`;
         } else {
-            feedbackBanner.innerText = timeout ? `⏱ TIMEOUT: Fee applied (-50 Pts).` : `❌ ERROR: Fee applied (-50 Pts).`;
+            feedbackBanner.innerHTML = timeout ? `<i class="fas fa-hourglass-end mr-2"></i>⏱ TIMEOUT: Fee Applied (-50 Points).` : `<i class="fas fa-times-circle mr-2"></i>❌ ALLOCATION ERROR: Fee Applied (-50 Points).`;
         }
     }
 
     if (rollingScore < 0) rollingScore = 0;
     document.getElementById('live-score-display').innerText = `${rollingScore} PTS`;
 
-    if (isPracticeMode) {
-        practiceIdx++;
-    } else {
-        choiceLogs.push({
-            trial_number: realIdx + 1,
+    if (!isPracticeMode) {
+        // Build the trial payload object
+        const trialPayload = {
+            trial_number: currentTrialIndex + 1,
             difficulty: currentTrial.difficulty,
             help_chosen: selectedHelpThisTrial,
+            advisor_role: currentAdvisorRole,
             reaction_time: parseFloat(duration.toFixed(3)),
             is_correct: isCorrect,
             running_score: rollingScore
-        });
-        realIdx++;
+        };
+
+        // 1. Keep pushing to local log array for final summary/redirects
+        choiceLogs.push(trialPayload);
+
+        // 2. 🔥 CALL LIVE SAVE HERE FOR INSTANT BACKEND RECORDING
+        saveCurrentTrial(trialPayload);
     }
 
+    currentTrialIndex++;
     setTimeout(startTrial, 1500);
 }
 
@@ -381,8 +486,57 @@ function transmitFinalPayload() {
         if (data.redirect_url) window.location.href = data.redirect_url;
     })
     .catch(error => {
-        console.error(error);
+        console.error("Submission Error:", error);
     });
+}
+// Call this function every time a participant finishes a single trial screen
+function saveCurrentTrial(trialData) {
+    const csrftoken = getCookie('csrftoken');
+
+    console.log("🚀 Attempting to save trial data:", trialData);
+
+    fetch('/submit-trial/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        keepalive: true, // Great choice for ensuring fast network requests don't drop on page transitions
+        body: JSON.stringify({
+            trial_number: trialData.trial_number,
+            difficulty: trialData.difficulty,
+            help_chosen: trialData.help_chosen,
+            advisor_role: trialData.advisor_role,
+            reaction_time: trialData.reaction_time,
+            is_correct: trialData.is_correct,
+            running_score: trialData.running_score
+        })
+    })
+    .then(res => {
+        if (!res.ok) {
+            // This captures 403, 404, 500 status codes clearly
+            throw new Error(`HTTP error! Status: ${res.status}`);
+        }
+        return res.json();
+    })
+    .then(data => console.log('Trial saved live:', data))
+    .catch(err => console.error('Error saving trial:', err));
+}
+
+// CSRF Token Extractor Helper
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
 </script>
 </body>

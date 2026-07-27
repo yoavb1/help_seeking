@@ -1,0 +1,62 @@
+[
+  {
+    "number": 1,
+    "difficulty": "easy",
+    "target": 15,
+    "air_rule": "Must equal exactly 5.",
+    "sea_rule": "Must equal exactly 5.",
+    "rail_rule": "Must equal exactly 5.",
+    "sol_air": 5,
+    "sol_sea": 5,
+    "sol_rail": 5,
+    "advisor_role": "subordinate"
+  },
+  {
+    "number": 2,
+    "difficulty": "easy",
+    "target": 15,
+    "air_rule": "Must equal exactly 3.",
+    "sea_rule": "Must equal double Air Freight.",
+    "rail_rule": "Must equal remaining cargo.",
+    "sol_air": 3,
+    "sol_sea": 6,
+    "sol_rail": 6,
+    "advisor_role": "subordinate"
+  },
+  {
+    "number": 3,
+    "difficulty": "easy",
+    "target": 15,
+    "air_rule": "Must equal zero.",
+    "sea_rule": "Must equal exactly 10.",
+    "rail_rule": "Must equal remaining cargo.",
+    "sol_air": 0,
+    "sol_sea": 10,
+    "sol_rail": 5,
+    "advisor_role": "subordinate"
+  },
+  {
+    "number": 4,
+    "difficulty": "hard",
+    "target": 15,
+    "air_rule": "Must be 1 container less than Rail.",
+    "sea_rule": "Must equal exactly 7.",
+    "rail_rule": "Must equal remaining cargo split evenly with Air.",
+    "sol_air": 3,
+    "sol_sea": 7,
+    "sol_rail": 4,
+    "advisor_role": "subordinate"
+  },
+  {
+    "number": 5,
+    "difficulty": "easy",
+    "target": 15,
+    "air_rule": "Must equal exactly 4.",
+    "sea_rule": "Must equal exactly 4.",
+    "rail_rule": "Must equal remaining cargo.",
+    "sol_air": 4,
+    "sol_sea": 4,
+    "sol_rail": 7,
+    "advisor_role": "subordinate"
+  }
+]

@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         body { background-color: #f4f6f9; min-height: 100vh; display: flex; align-items: center; padding: 40px 0; }
-        .survey-card { border: none; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 800px; }
+        .survey-card { border: none; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 900px; }
         .likert-table th, .likert-table td { text-align: center; vertical-align: middle !important; font-size: 0.95rem; }
         .likert-table td:first-child { text-align: left; font-weight: 500; }
     </style>
@@ -19,7 +19,7 @@
                 <i class="fas fa-clipboard-list fa-3x"></i>
             </div>
             <h3 class="font-weight-bold text-dark text-center mb-2">Workspace Evaluation</h3>
-            <p class="text-secondary text-center small mb-4">Please answer the following evaluation questions regarding your experience in the logistics routing task.</p>
+            <p class="text-secondary text-center small mb-4">Please indicate your level of agreement with the following statements regarding workplace help-seeking.</p>
 
             <form method="POST" action="">
                 {% csrf_token %}
@@ -37,20 +37,52 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>I felt concerned that asking Director Vance for assistance would make me look incompetent.</td>
-                                <td><input type="radio" name="image_cost" value="1" required></td>
-                                <td><input type="radio" name="image_cost" value="2"></td>
-                                <td><input type="radio" name="image_cost" value="3"></td>
-                                <td><input type="radio" name="image_cost" value="4"></td>
-                                <td><input type="radio" name="image_cost" value="5"></td>
+                                <td>Asking someone you work with for help reduces your status relative to them.</td>
+                                <td><input type="radio" name="status_reduction" value="1" required></td>
+                                <td><input type="radio" name="status_reduction" value="2"></td>
+                                <td><input type="radio" name="status_reduction" value="3"></td>
+                                <td><input type="radio" name="status_reduction" value="4"></td>
+                                <td><input type="radio" name="status_reduction" value="5"></td>
                             </tr>
                             <tr>
-                                <td>I felt comfortable reaching out to Director Vance when parameters became overly complex.</td>
-                                <td><input type="radio" name="closeness" value="1" required></td>
-                                <td><input type="radio" name="closeness" value="2"></td>
-                                <td><input type="radio" name="closeness" value="3"></td>
-                                <td><input type="radio" name="closeness" value="4"></td>
-                                <td><input type="radio" name="closeness" value="5"></td>
+                                <td>Asking someone you work with for help makes you seem incompetent.</td>
+                                <td><input type="radio" name="incompetent" value="1" required></td>
+                                <td><input type="radio" name="incompetent" value="2"></td>
+                                <td><input type="radio" name="incompetent" value="3"></td>
+                                <td><input type="radio" name="incompetent" value="4"></td>
+                                <td><input type="radio" name="incompetent" value="5"></td>
+                            </tr>
+                            <tr>
+                                <td>Asking someone you work with for help makes you seem inexperienced.</td>
+                                <td><input type="radio" name="inexperienced" value="1" required></td>
+                                <td><input type="radio" name="inexperienced" value="2"></td>
+                                <td><input type="radio" name="inexperienced" value="3"></td>
+                                <td><input type="radio" name="inexperienced" value="4"></td>
+                                <td><input type="radio" name="inexperienced" value="5"></td>
+                            </tr>
+                            <tr>
+                                <td>Asking someone you work with for help makes you seem lesser than them.</td>
+                                <td><input type="radio" name="lesser" value="1" required></td>
+                                <td><input type="radio" name="lesser" value="2"></td>
+                                <td><input type="radio" name="lesser" value="3"></td>
+                                <td><input type="radio" name="lesser" value="4"></td>
+                                <td><input type="radio" name="lesser" value="5"></td>
+                            </tr>
+                            <tr>
+                                <td>Asking someone you work with for help hurts your status in the organization.</td>
+                                <td><input type="radio" name="org_status_hurt" value="1" required></td>
+                                <td><input type="radio" name="org_status_hurt" value="2"></td>
+                                <td><input type="radio" name="org_status_hurt" value="3"></td>
+                                <td><input type="radio" name="org_status_hurt" value="4"></td>
+                                <td><input type="radio" name="org_status_hurt" value="5"></td>
+                            </tr>
+                            <tr>
+                                <td>If I ask others for help, it will be held against me.</td>
+                                <td><input type="radio" name="held_against" value="1" required></td>
+                                <td><input type="radio" name="held_against" value="2"></td>
+                                <td><input type="radio" name="held_against" value="3"></td>
+                                <td><input type="radio" name="held_against" value="4"></td>
+                                <td><input type="radio" name="held_against" value="5"></td>
                             </tr>
                         </tbody>
                     </table>

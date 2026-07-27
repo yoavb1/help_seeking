@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Experiment Analytics Dashboard</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .stat-card { border: none; border-radius: 12px; transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-3px); }
+        .bg-gradient-primary { background: linear-gradient(135deg, #4e73df 0%, #224abe 100%); color: white; }
+        .bg-gradient-success { background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%); color: white; }
+        .bg-gradient-warning { background: linear-gradient(135deg, #f6c23e 0%, #dda20a 100%); color: white; }
+        .bg-gradient-info { background: linear-gradient(135deg, #36b9cc 0%, #258391 100%); color: white; }
+        .table-container { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .filter-box { background: #ffffff; border-radius: 10px; padding: 20px; border: 1px solid #e3e6f0; margin-bottom: 25px; }
+        .badge-help-human { background-color: #20c997; color: white; }
+        .badge-help-ai { background-color: #0d6efd; color: white; }
+        .badge-help-none { background-color: #6c757d; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid py-4 px-4">
+    <!-- Header Title & Export Button -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-0"><i class="fas fa-chart-line text-primary me-2"></i>Participant Actions Dashboard</h2>
+            <p class="text-muted small mb-0">Monitor trial metrics, filter results, and export experiment logs</p>
+        </div>
+        <div>
+            <a href="{% url 'experiment:download_trials_csv' %}" class="btn btn-success font-weight-bold shadow-sm">                <i class="fas fa-file-csv me-2"></i> Export All to CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- Overview Metric Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card bg-gradient-primary p-3 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-white-50 small text-uppercase font-weight-bold">Total Logged Trials</div>
+                        <h3 class="fw-bold mb-0" id="card-total-trials">{{ trials|length }}</h3>
+                    </div>
+                    <i class="fas fa-list-check fa-2x text-white-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-gradient-success p-3 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-white-50 small text-uppercase font-weight-bold">Accuracy Rate</div>
+                        <h3 class="fw-bold mb-0">{{ accuracy_rate|default:"--" }}%</h3>
+                    </div>
+                    <i class="fas fa-bullseye fa-2x text-white-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-gradient-warning p-3 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-white-50 small text-uppercase font-weight-bold">Avg Reaction Time</div>
+                        <h3 class="fw-bold mb-0">{{ avg_rt|default:"--" }}s</h3>
+                    </div>
+                    <i class="fas fa-stopwatch fa-2x text-white-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-gradient-info p-3 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-white-50 small text-uppercase font-weight-bold">AI Support Rate</div>
+                        <h3 class="fw-bold mb-0">{{ ai_usage_rate|default:"--" }}%</h3>
+                    </div>
+                    <i class="fas fa-robot fa-2x text-white-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Control Panel -->
+    <div class="filter-box shadow-sm">
+        <h6 class="fw-bold text-dark mb-3"><i class="fas fa-filter text-primary me-2"></i>Filter Participant Data</h6>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label small font-weight-bold text-muted">Leadership Condition</label>
+                <select id="filter-condition" class="form-select">
+                    <option value="">All Conditions</option>
+                    <option value="prestige">Prestige</option>
+                    <option value="dominance">Dominance</option>
+                    <option value="control">Control</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small font-weight-bold text-muted">Help Resource Chosen</label>
+                <select id="filter-help" class="form-select">
+                    <option value="">All Support Types</option>
+                    <option value="human">Participant 103 (Human)</option>
+                    <option value="ai">Routing AI</option>
+                    <option value="none">None (Autonomous)</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small font-weight-bold text-muted">Task Difficulty</label>
+                <select id="filter-difficulty" class="form-select">
+                    <option value="">All Difficulties</option>
+                    <option value="E">Easy (E)</option>
+                    <option value="M">Medium (M)</option>
+                    <option value="H">Hard (H)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Data Table -->
+    <div class="table-container">
+        <div class="table-responsive">
+            <table id="participantTable" class="table table-hover align-middle w-100">
+                <thead class="table-light">
+                    <tr>
+                        <th>Session ID</th>
+                        <th>Condition</th>
+                        <th>Trial #</th>
+                        <th>Difficulty</th>
+                        <th>Help Chosen</th>
+                        <th>Reaction Time</th>
+                        <th>Outcome</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in trials %}
+                    <tr>
+                        <td class="fw-bold text-secondary">{{ t.session.session_id }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ t.session.condition|upper }}</span></td>
+                        <td>{{ t.trial_number }}</td>
+                        <td><span class="badge bg-secondary">{{ t.difficulty }}</span></td>
+                        <td>
+                            {% if t.help_chosen == 'human' %}
+                                <span class="badge badge-help-human"><i class="fas fa-user-tie me-1"></i> Human</span>
+                            {% elif t.help_chosen == 'ai' %}
+                                <span class="badge badge-help-ai"><i class="fas fa-robot me-1"></i> AI Script</span>
+                            {% else %}
+                                <span class="badge badge-help-none">None</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ t.reaction_time }}s</td>
+                        <td>
+                            {% if t.is_correct %}
+                                <span class="badge bg-success"><i class="fas fa-check me-1"></i> Correct</span>
+                            {% else %}
+                                <span class="badge bg-danger"><i class="fas fa-times me-1"></i> Incorrect</span>
+                            {% endif %}
+                        </td>
+                        <td class="fw-bold text-dark">{{ t.running_score }} PTS</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts: jQuery, Bootstrap, DataTables -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Initialize DataTable
+        var table = $('#participantTable').DataTable({
+            "pageLength": 10,
+            "order": [[ 0, "asc" ], [ 2, "asc" ]],
+            "language": {
+                "search": "<i class='fas fa-search me-1'></i> Search Log:"
+            }
+        });
+
+        // Custom Dropdown Filtering Logic
+        $('#filter-condition').on('change', function() {
+            table.column(1).search(this.value ? '^' + this.value + '$' : '', true, false).draw();
+        });
+
+        $('#filter-help').on('change', function() {
+            table.column(4).search(this.value, true, false).draw();
+        });
+
+        $('#filter-difficulty').on('change', function() {
+            table.column(3).search(this.value ? '^' + this.value + '$' : '', true, false).draw();
+        });
+    });
+</script>
+</body>
+</html>

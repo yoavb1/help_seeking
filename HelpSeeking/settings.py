@@ -123,3 +123,8 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Experiment Configuration
+EXPERIMENT_PRACTICE_TRIALS = 5
+EXPERIMENT_LIVE_TRIALS = 50
+TIME_LIMIT = 20

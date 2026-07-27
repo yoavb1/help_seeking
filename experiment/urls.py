@@ -10,9 +10,11 @@ urlpatterns = [
     path('dashboard/', views.dashboard_view, name='dashboard'),  # Live Experiment Route
 
     # Task Submission & Survey Handlers
+    path('submit-trial/', views.submit_trial, name='submit_trial'),
     path('submit-task/', views.submit_task, name='submit_task'),
     path('survey/', views.survey_view, name='survey'),
     path('demographics/', views.demographics_view, name='demographics'),
     path('thank-you/', views.thank_you_view, name='thank_you'),
-    path('control-panel/analytics/', views.admin_analytics_dashboard, name='admin_analytics'),
+    path('export/trials-csv/',views.download_trials_csv, name="download_trials_csv",),
+    path('admin-dashboard/', views.analytics_dashboard, name='analytics_dashboard'),
 ]
