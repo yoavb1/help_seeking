@@ -83,7 +83,34 @@ def onboarding_view(request):
 
     if request.method == "POST":
         current_step = request.session.get('onboarding_step', 1)
-        if current_step >= 6:
+        if current_step == 6:
+            item_1 = request.POST.get('mc_item_1')
+            item_2 = request.POST.get('mc_item_2')
+            item_3 = request.POST.get('mc_item_3')
+            item_4 = request.POST.get('mc_item_4')
+            item_5 = request.POST.get('mc_item_5')
+            item_6 = request.POST.get('mc_item_6')
+            item_7 = request.POST.get('mc_item_7')
+            item_8 = request.POST.get('mc_item_8')
+            attn_check = request.POST.get('mc_attention_check')
+
+            # Save Likert ratings
+            experiment_session.mc_item_1_respect = int(item_1) if item_1 else None
+            experiment_session.mc_item_2_control_others = int(item_2) if item_2 else None
+            experiment_session.mc_item_3_aggressive_tactics = int(item_3) if item_3 else None
+            experiment_session.mc_item_4_high_esteem = int(item_4) if item_4 else None
+            experiment_session.mc_item_5_control_vs_controlled = int(item_5) if item_5 else None
+            experiment_session.mc_item_6_way_with_others = int(item_6) if item_6 else None
+            experiment_session.mc_item_7_talents_recognized = int(item_7) if item_7 else None
+            experiment_session.mc_item_8_seek_advice = int(item_8) if item_8 else None
+
+            # Validate Attention Check (Participant must choose option '2')
+            if attn_check:
+                experiment_session.mc_attention_check_value = int(attn_check)
+                experiment_session.passed_attention_check = (int(attn_check) == 2)
+
+            experiment_session.save()
+
             # Onboarding finished! Redirect to dashboard for practice run
             return redirect('experiment:practice_run')
         else:
@@ -397,11 +424,11 @@ def admin_dashboard(request):
 
 
 @staff_member_required
-# @staff_member_required  # Optional: Restrict access to logged-in admin users only
 def analytics_dashboard(request):
+    """Admin dashboard displaying summary metrics and detailed trial & session records."""
     trials = ParticipantTrial.objects.select_related('session').all()
 
-    # Calculate top summary metrics
+    # Summary metric calculations
     total_count = trials.count()
     correct_count = trials.filter(is_correct=True).count()
     accuracy_rate = round((correct_count / total_count) * 100, 1) if total_count > 0 else 0
@@ -421,19 +448,32 @@ def analytics_dashboard(request):
     return render(request, 'admin_dashboard.html', context)
 
 
+# Alias to retain compatibility if referenced elsewhere in urls.py
+admin_dashboard = analytics_dashboard
+
+
+@staff_member_required
 def download_trials_csv(request):
-    # 1. Set response headers for file download
+    """Exports all trial, session, manipulation check, survey, and demographic data to CSV."""
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = (
-        'attachment; filename="participant_trials_data.csv"'
-    )
+    response["Content-Disposition"] = 'attachment; filename="experiment_all_data.csv"'
 
     writer = csv.writer(response)
 
-    # 2. Header row
+    # Expanded CSV Headers
     writer.writerow([
+        # Session Metadata
         "Session ID",
+        "Prolific PID",
+        "Study ID",
+        "Prolific Session ID",
         "Condition",
+        "Total Score",
+        "Total Help Sought",
+        "Human Clicks",
+        "AI Clicks",
+
+        # Trial Details
         "Trial Number",
         "Difficulty",
         "Help Chosen",
@@ -441,22 +481,49 @@ def download_trials_csv(request):
         "Reaction Time (s)",
         "Is Correct",
         "Running Score",
+
+        # Step 6: Manipulation & Attention Check Data
+        "MC 1 (Respect)",
+        "MC 2 (Control Others)",
+        "MC 3 (Aggressive Tactics)",
+        "MC 4 (High Esteem)",
+        "MC 5 (Control vs Controlled)",
+        "MC 6 (Way with Others)",
+        "MC 7 (Talents Recognized)",
+        "MC 8 (Seek Advice)",
+        "Attention Check Value",
+        "Passed Attention Check",
+
+        # Post-Task Survey Ratings
+        "Status Reduction",
+        "Incompetent Rating",
+        "Inexperienced Rating",
+        "Lesser Rating",
+        "Org Status Hurt Rating",
+        "Held Against Rating",
+
+        # Demographics
+        "Participant Age",
+        "Participant Gender",
     ])
 
-    # 3. Fetch all trials from database
     trials = ParticipantTrial.objects.select_related("session").all()
 
-    # 4. Write row for each trial
     for t in trials:
-        # Get condition safely from parent session (handling fallback names)
-        session_id = t.session.session_id if t.session else "N/A"
-        condition = (
-            getattr(t.session, "condition", "N/A") if t.session else "N/A"
-        )
-
+        s = t.session
         writer.writerow([
-            session_id,
-            condition,
+            # Session Metadata
+            getattr(s, "session_id", "N/A") if s else "N/A",
+            getattr(s, "prolific_pid", "N/A") if s else "N/A",
+            getattr(s, "study_id", "N/A") if s else "N/A",
+            getattr(s, "prolific_session_id", "N/A") if s else "N/A",
+            getattr(s, "condition", "N/A") if s else "N/A",
+            getattr(s, "total_score", 0) if s else 0,
+            getattr(s, "total_help_sought", 0) if s else 0,
+            getattr(s, "human_clicks", 0) if s else 0,
+            getattr(s, "ai_clicks", 0) if s else 0,
+
+            # Trial Details
             t.trial_number,
             t.difficulty,
             t.help_chosen,
@@ -464,6 +531,30 @@ def download_trials_csv(request):
             t.reaction_time,
             t.is_correct,
             t.running_score,
+
+            # Step 6: Manipulation & Attention Check Data
+            getattr(s, "mc_item_1_respect", "") if s else "",
+            getattr(s, "mc_item_2_control_others", "") if s else "",
+            getattr(s, "mc_item_3_aggressive_tactics", "") if s else "",
+            getattr(s, "mc_item_4_high_esteem", "") if s else "",
+            getattr(s, "mc_item_5_control_vs_controlled", "") if s else "",
+            getattr(s, "mc_item_6_way_with_others", "") if s else "",
+            getattr(s, "mc_item_7_talents_recognized", "") if s else "",
+            getattr(s, "mc_item_8_seek_advice", "") if s else "",
+            getattr(s, "mc_attention_check_value", "") if s else "",
+            getattr(s, "passed_attention_check", False) if s else False,
+
+            # Post-Task Survey Ratings
+            getattr(s, "status_reduction", "") if s else "",
+            getattr(s, "incompetent_rating", "") if s else "",
+            getattr(s, "inexperienced_rating", "") if s else "",
+            getattr(s, "lesser_rating", "") if s else "",
+            getattr(s, "org_status_hurt_rating", "") if s else "",
+            getattr(s, "held_against_rating", "") if s else "",
+
+            # Demographics
+            getattr(s, "participant_age", "") if s else "",
+            getattr(s, "participant_gender", "") if s else "",
         ])
 
     return response

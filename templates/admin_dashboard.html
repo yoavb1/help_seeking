@@ -33,10 +33,11 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold text-dark mb-0"><i class="fas fa-chart-line text-primary me-2"></i>Participant Actions Dashboard</h2>
-            <p class="text-muted small mb-0">Monitor trial metrics, filter results, and export experiment logs</p>
+            <p class="text-muted small mb-0">Monitor trial metrics, manipulation checks, demographic profiles, and export complete datasets</p>
         </div>
         <div>
-            <a href="{% url 'experiment:download_trials_csv' %}" class="btn btn-success font-weight-bold shadow-sm">                <i class="fas fa-file-csv me-2"></i> Export All to CSV
+            <a href="{% url 'experiment:download_trials_csv' %}" class="btn btn-success font-weight-bold shadow-sm">
+                <i class="fas fa-file-csv me-2"></i> Export Complete Data (CSV)
             </a>
         </div>
     </div>
@@ -93,7 +94,7 @@
     <div class="filter-box shadow-sm">
         <h6 class="fw-bold text-dark mb-3"><i class="fas fa-filter text-primary me-2"></i>Filter Participant Data</h6>
         <div class="row g-3">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label small font-weight-bold text-muted">Leadership Condition</label>
                 <select id="filter-condition" class="form-select">
                     <option value="">All Conditions</option>
@@ -102,7 +103,7 @@
                     <option value="control">Control</option>
                 </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label small font-weight-bold text-muted">Help Resource Chosen</label>
                 <select id="filter-help" class="form-select">
                     <option value="">All Support Types</option>
@@ -111,13 +112,21 @@
                     <option value="none">None (Autonomous)</option>
                 </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label small font-weight-bold text-muted">Task Difficulty</label>
                 <select id="filter-difficulty" class="form-select">
                     <option value="">All Difficulties</option>
                     <option value="E">Easy (E)</option>
                     <option value="M">Medium (M)</option>
                     <option value="H">Hard (H)</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small font-weight-bold text-muted">Attention Check</label>
+                <select id="filter-attn" class="form-select">
+                    <option value="">All Participants</option>
+                    <option value="Passed">Passed Only</option>
+                    <option value="Failed">Failed Only</option>
                 </select>
             </div>
         </div>
@@ -130,19 +139,23 @@
                 <thead class="table-light">
                     <tr>
                         <th>Session ID</th>
+                        <th>Prolific ID</th>
                         <th>Condition</th>
                         <th>Trial #</th>
-                        <th>Difficulty</th>
+                        <th>Diff</th>
                         <th>Help Chosen</th>
-                        <th>Reaction Time</th>
+                        <th>RT (s)</th>
                         <th>Outcome</th>
                         <th>Score</th>
+                        <th>Attn Check</th>
+                        <th>Details</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for t in trials %}
                     <tr>
                         <td class="fw-bold text-secondary">{{ t.session.session_id }}</td>
+                        <td><small class="text-muted">{{ t.session.prolific_pid|default:"N/A" }}</small></td>
                         <td><span class="badge bg-light text-dark border">{{ t.session.condition|upper }}</span></td>
                         <td>{{ t.trial_number }}</td>
                         <td><span class="badge bg-secondary">{{ t.difficulty }}</span></td>
@@ -150,7 +163,7 @@
                             {% if t.help_chosen == 'human' %}
                                 <span class="badge badge-help-human"><i class="fas fa-user-tie me-1"></i> Human</span>
                             {% elif t.help_chosen == 'ai' %}
-                                <span class="badge badge-help-ai"><i class="fas fa-robot me-1"></i> AI Script</span>
+                                <span class="badge badge-help-ai"><i class="fas fa-robot me-1"></i> AI</span>
                             {% else %}
                                 <span class="badge badge-help-none">None</span>
                             {% endif %}
@@ -164,7 +177,60 @@
                             {% endif %}
                         </td>
                         <td class="fw-bold text-dark">{{ t.running_score }} PTS</td>
+                        <td>
+                            {% if t.session.passed_attention_check %}
+                                <span class="badge bg-success">Passed</span>
+                            {% else %}
+                                <span class="badge bg-danger">Failed</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#detailsModal{{ forloop.counter }}">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
                     </tr>
+
+                    <!-- Details Modal for individual participant -->
+                    <div class="modal fade" id="detailsModal{{ forloop.counter }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title fw-bold">Session Details & Evaluation Ratings</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <h6 class="fw-bold text-primary">Demographics & Prolific Info</h6>
+                                    <p class="small text-muted mb-3">
+                                        <strong>Age:</strong> {{ t.session.participant_age|default:"N/A" }} |
+                                        <strong>Gender:</strong> {{ t.session.participant_gender|default:"N/A" }} |
+                                        <strong>Study ID:</strong> {{ t.session.study_id|default:"N/A" }}
+                                    </p>
+
+                                    <h6 class="fw-bold text-primary">Step 6 Manipulation Check Items (1-7 Scale)</h6>
+                                    <ul class="small list-group mb-3">
+                                        <li class="list-group-item"><strong>1. Respect/Admire:</strong> {{ t.session.mc_item_1_respect|default:"-" }}</li>
+                                        <li class="list-group-item"><strong>2. Control Others:</strong> {{ t.session.mc_item_2_control_others|default:"-" }}</li>
+                                        <li class="list-group-item"><strong>3. Aggressive Tactics:</strong> {{ t.session.mc_item_3_aggressive_tactics|default:"-" }}</li>
+                                        <li class="list-group-item"><strong>4. High Esteem:</strong> {{ t.session.mc_item_4_high_esteem|default:"-" }}</li>
+                                        <li class="list-group-item"><strong>5. Control vs Controlled:</strong> {{ t.session.mc_item_5_control_vs_controlled|default:"-" }}</li>
+                                        <li class="list-group-item"><strong>6. Way with Others:</strong> {{ t.session.mc_item_6_way_with_others|default:"-" }}</li>
+                                        <li class="list-group-item"><strong>7. Talents Recognized:</strong> {{ t.session.mc_item_7_talents_recognized|default:"-" }}</li>
+                                        <li class="list-group-item"><strong>8. Seek Advice:</strong> {{ t.session.mc_item_8_seek_advice|default:"-" }}</li>
+                                        <li class="list-group-item bg-light"><strong>Attention Check Chosen Value:</strong> {{ t.session.mc_attention_check_value|default:"-" }} (Passed: {{ t.session.passed_attention_check }})</li>
+                                    </ul>
+
+                                    <h6 class="fw-bold text-primary">Post-Task Survey Evaluations</h6>
+                                    <p class="small text-muted mb-0">
+                                        Status Reduction: {{ t.session.status_reduction|default:"-" }} |
+                                        Incompetent Rating: {{ t.session.incompetent_rating|default:"-" }} |
+                                        Inexperienced Rating: {{ t.session.inexperienced_rating|default:"-" }} |
+                                        Lesser Rating: {{ t.session.lesser_rating|default:"-" }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     {% endfor %}
                 </tbody>
             </table>
@@ -180,26 +246,29 @@
 
 <script>
     $(document).ready(function() {
-        // Initialize DataTable
         var table = $('#participantTable').DataTable({
             "pageLength": 10,
-            "order": [[ 0, "asc" ], [ 2, "asc" ]],
+            "order": [[ 0, "asc" ], [ 3, "asc" ]],
             "language": {
                 "search": "<i class='fas fa-search me-1'></i> Search Log:"
             }
         });
 
-        // Custom Dropdown Filtering Logic
+        // Dropdown Filters
         $('#filter-condition').on('change', function() {
-            table.column(1).search(this.value ? '^' + this.value + '$' : '', true, false).draw();
+            table.column(2).search(this.value ? '^' + this.value + '$' : '', true, false).draw();
         });
 
         $('#filter-help').on('change', function() {
-            table.column(4).search(this.value, true, false).draw();
+            table.column(5).search(this.value, true, false).draw();
         });
 
         $('#filter-difficulty').on('change', function() {
-            table.column(3).search(this.value ? '^' + this.value + '$' : '', true, false).draw();
+            table.column(4).search(this.value ? '^' + this.value + '$' : '', true, false).draw();
+        });
+
+        $('#filter-attn').on('change', function() {
+            table.column(9).search(this.value, true, false).draw();
         });
     });
 </script>

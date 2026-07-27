@@ -326,31 +326,125 @@
                     </div>
                     {% endif %}
 
+                    <!-- ========================================== -->
+                    <!-- MANIPULATION CHECK & ATTENTION CHECK -->
+                    <!-- ========================================== -->
+                    <div class="bg-light p-3 rounded border mb-4">
+                        <h6 class="font-weight-bold text-dark mb-2" style="font-size: 0.95rem;">
+                            <i class="fas fa-clipboard-list text-primary mr-2"></i>Leadership Self-Evaluation Check
+                        </h6>
+                        <p class="text-secondary small mb-3">
+                            Please indicate the extent to which each statement accurately describes you in the role of <strong>{% if condition == 'dominance' %}Dominant Operations Manager{% elif condition == 'prestige' %}Prestigious Operations Manager{% else %}Operations Manager{% endif %}</strong>:
+                        </p>
+
+                        <div class="table-responsive">
+                            <table class="table likert-table bg-white border rounded">
+                                <thead>
+                                    <tr class="bg-light">
+                                        <th class="statement-head border-0"></th>
+                                        <th>1<br><small class="text-muted">not at all</small></th>
+                                        <th>2</th>
+                                        <th>3</th>
+                                        <th>4<br><small class="text-muted">Somewhat</small></th>
+                                        <th>5</th>
+                                        <th>6</th>
+                                        <th>7<br><small class="text-muted">Very much</small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Item 1 (Prestige) -->
+                                    <tr>
+                                        <td class="likert-statement">Members of my group respect and admire me.</td>
+                                        {% for i in "1234567" %}
+                                        <td><input type="radio" name="mc_item_1" value="{{ i }}" class="likert-radio" required></td>
+                                        {% endfor %}
+                                    </tr>
+                                    <!-- Item 2 (Dominance) -->
+                                    <tr>
+                                        <td class="likert-statement">I enjoy having control over others.</td>
+                                        {% for i in "1234567" %}
+                                        <td><input type="radio" name="mc_item_2" value="{{ i }}" class="likert-radio" required></td>
+                                        {% endfor %}
+                                    </tr>
+                                    <!-- Item 3 (Dominance) -->
+                                    <tr>
+                                        <td class="likert-statement">I am willing to use aggressive tactics to get my way.</td>
+                                        {% for i in "1234567" %}
+                                        <td><input type="radio" name="mc_item_3" value="{{ i }}" class="likert-radio" required></td>
+                                        {% endfor %}
+                                    </tr>
+                                    <!-- Item 4 (Prestige) -->
+                                    <tr>
+                                        <td class="likert-statement">I am held in high esteem by those I know.</td>
+                                        {% for i in "1234567" %}
+                                        <td><input type="radio" name="mc_item_4" value="{{ i }}" class="likert-radio" required></td>
+                                        {% endfor %}
+                                    </tr>
+                                    <!-- Item 5 (Dominance) -->
+                                    <tr>
+                                        <td class="likert-statement">I try to control others rather than permit them to control me.</td>
+                                        {% for i in "1234567" %}
+                                        <td><input type="radio" name="mc_item_5" value="{{ i }}" class="likert-radio" required></td>
+                                        {% endfor %}
+                                    </tr>
+                                    <!-- Item 6 (ATTENTION CHECK) -->
+                                    <tr class="likert-statement">
+                                        <td class="likert-statement">Choose 2 if you follow the instructions.</td>
+                                        {% for i in "1234567" %}
+                                        <td><input type="radio" name="mc_attention_check" value="{{ i }}" class="likert-radio" required></td>
+                                        {% endfor %}
+                                    </tr>
+                                    <!-- Item 7 (Dominance) -->
+                                    <tr>
+                                        <td class="likert-statement">Others know it is better to let me have my way.</td>
+                                        {% for i in "1234567" %}
+                                        <td><input type="radio" name="mc_item_6" value="{{ i }}" class="likert-radio" required></td>
+                                        {% endfor %}
+                                    </tr>
+                                    <!-- Item 8 (Prestige) -->
+                                    <tr>
+                                        <td class="likert-statement">My unique talents and abilities are recognized by others.</td>
+                                        {% for i in "1234567" %}
+                                        <td><input type="radio" name="mc_item_7" value="{{ i }}" class="likert-radio" required></td>
+                                        {% endfor %}
+                                    </tr>
+                                    <!-- Item 9 (Prestige) -->
+                                    <tr>
+                                        <td class="likert-statement">Others seek my advice on a variety of matters.</td>
+                                        {% for i in "1234567" %}
+                                        <td><input type="radio" name="mc_item_8" value="{{ i }}" class="likert-radio" required></td>
+                                        {% endfor %}
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <hr class="my-4">
 
-                <h5 class="font-weight-bold text-dark mb-2">Upcoming Task Setup</h5>
-                <p class="text-secondary small mb-3">
-                    As Operations Manager, your primary responsibility is to review and authorize workforce and cargo allocation logs across fast-paced operational rounds:
-                </p>
+                    <h5 class="font-weight-bold text-dark mb-2">Upcoming Task Setup</h5>
+                    <p class="text-secondary small mb-3">
+                        As Operations Manager, your primary responsibility is to review and authorize workforce and cargo allocation logs across fast-paced operational rounds:
+                    </p>
 
-                <!-- Task Rules & Constraints Box -->
-                <div class="bg-light p-3 rounded border mb-4">
-                    <h6 class="font-weight-bold text-dark mb-2" style="font-size: 0.95rem;">
-                        <i class="fas fa-clipboard-check text-primary mr-2"></i>Task Guidelines & Rules:
-                    </h6>
-                    <ul class="text-secondary small mb-0 pl-3" style="line-height: 1.6;">
-                        <li class="mb-1">
-                            <strong>Resource Allocation:</strong> In each trial, you must distribute container loads across three transit modes: <strong>Air</strong>, <strong>Sea</strong>, and <strong>Rail</strong>.
-                        </li>
-                        <li class="mb-1">
-                            <strong>Target Constraint:</strong> The total sum across all three transit options must equal <strong>exactly 15 containers</strong> for every allocation log.
-                        </li>
-                    </ul>
-                </div>
+                    <!-- Task Rules & Constraints Box -->
+                    <div class="bg-light p-3 rounded border mb-4">
+                        <h6 class="font-weight-bold text-dark mb-2" style="font-size: 0.95rem;">
+                            <i class="fas fa-clipboard-check text-primary mr-2"></i>Task Guidelines & Rules:
+                        </h6>
+                        <ul class="text-secondary small mb-0 pl-3" style="line-height: 1.6;">
+                            <li class="mb-1">
+                                <strong>Resource Allocation:</strong> In each trial, you must distribute container loads across three transit modes: <strong>Air</strong>, <strong>Sea</strong>, and <strong>Rail</strong>.
+                            </li>
+                            <li class="mb-1">
+                                <strong>Target Constraint:</strong> The total sum across all three transit options must equal <strong>exactly 15 containers</strong> for every allocation log.
+                            </li>
+                        </ul>
+                    </div>
 
-                <p class="text-secondary small mb-3">
-                    To assist you in making accurate decisions under time constraints, you will have two optional decision-support channels available during each trial:
-                </p>
+                    <p class="text-secondary small mb-3">
+                        To assist you in making accurate decisions under time constraints, you will have two optional decision-support channels available during each trial:
+                    </p>
                     <div class="row">
                         <!-- AI Advisor Box -->
                         <div class="col-md-6 mb-2">

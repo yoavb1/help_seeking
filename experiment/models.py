@@ -19,6 +19,20 @@ class ChoiceExperimentSession(models.Model):
     human_clicks = models.IntegerField(default=0)
     ai_clicks = models.IntegerField(default=0)
 
+    # --- Step 6: Manipulation Check Items (1-7 Scale) ---
+    mc_item_1_respect = models.IntegerField(null=True, blank=True)
+    mc_item_2_control_others = models.IntegerField(null=True, blank=True)
+    mc_item_3_aggressive_tactics = models.IntegerField(null=True, blank=True)
+    mc_item_4_high_esteem = models.IntegerField(null=True, blank=True)
+    mc_item_5_control_vs_controlled = models.IntegerField(null=True, blank=True)
+    mc_item_6_way_with_others = models.IntegerField(null=True, blank=True)
+    mc_item_7_talents_recognized = models.IntegerField(null=True, blank=True)
+    mc_item_8_seek_advice = models.IntegerField(null=True, blank=True)
+
+    # --- Step 6: Attention Check ---
+    mc_attention_check_value = models.IntegerField(null=True, blank=True)
+    passed_attention_check = models.BooleanField(default=False)
+
     # Post-Experiment Mediation Metrics (Help-Seeking / Image Cost Scale)
     status_reduction = models.IntegerField(null=True, blank=True)
     incompetent_rating = models.IntegerField(null=True, blank=True)
