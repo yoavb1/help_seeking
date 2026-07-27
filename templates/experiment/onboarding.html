@@ -17,8 +17,8 @@
         .likert-statement { text-align: left; font-size: 0.9rem; color: #333; line-height: 1.4; padding-right: 15px; }
         .likert-radio { transform: scale(1.2); cursor: pointer; }
 
-        /* Spinner */
-        .loading-spinner { width: 3.5rem; height: 3.5rem; border: 4px solid #e9ecef; border-top: 4px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
+        /* Custom Dynamic Spinner */
+        .loading-spinner { width: 3.5rem; height: 3.5rem; border: 4px solid #e9ecef; border-top: 4px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
@@ -190,19 +190,6 @@
                         </table>
                     </div>
 
-                    <!-- OPEN-ENDED DESCRIPTORS -->
-                    <div class="my-4 bg-light p-3 rounded border">
-                        <label class="font-weight-bold text-dark small mb-2">
-                            Please provide four words that might describe your style of leadership or what qualities you associate with a leader:
-                        </label>
-                        <div class="row">
-                            <div class="col-md-3 col-6 mb-2"><input type="text" class="form-control form-control-sm" name="w1" placeholder="1." required></div>
-                            <div class="col-md-3 col-6 mb-2"><input type="text" class="form-control form-control-sm" name="w2" placeholder="2." required></div>
-                            <div class="col-md-3 col-6 mb-2"><input type="text" class="form-control form-control-sm" name="w3" placeholder="3." required></div>
-                            <div class="col-md-3 col-6 mb-2"><input type="text" class="form-control form-control-sm" name="w4" placeholder="4." required></div>
-                        </div>
-                    </div>
-
                     <div class="text-center mt-4">
                         <button type="submit" class="btn btn-primary btn-lg px-5 font-weight-bold shadow-sm">
                             Submit & Process Profile <i class="fas fa-cogs ml-2"></i>
@@ -216,24 +203,74 @@
                 <!-- SCREEN 5: SIMULATED WAITING / EVALUATION -->
                 <!-- ========================================== -->
                 {% if step == 5 %}
-                <div class="text-center py-4">
-                    <div class="loading-spinner"></div>
-                    <h4 class="font-weight-bold text-dark mt-3">Evaluating Group Responses</h4>
+                <div class="text-center py-3">
+
+                    <!-- Dynamic Loading Container -->
+                    <div class="mb-3" id="icon-container" style="min-height: 60px;">
+                        <div class="loading-spinner"></div>
+                    </div>
+
+                    <h4 class="font-weight-bold text-dark mt-2" id="status-title">Evaluating Group Responses</h4>
 
                     <p class="text-secondary mt-3">
                         Please wait while the system evaluates the questionnaire data across all 4 group members using the Becker & Klein classification algorithm.
                     </p>
 
-                    <div class="alert alert-warning border-warning small d-inline-block text-muted px-4 py-2 mt-3">
-                        <i class="fas fa-spinner fa-spin mr-2"></i> System calculating team influence profiles. Thank you for your patience.
+                    <!-- Status Banner -->
+                    <div class="alert alert-warning border-warning small text-muted px-4 py-2 mt-3" id="status-banner">
+                        <i class="fas fa-spinner fa-spin mr-2" id="banner-icon"></i>
+                        <span id="banner-text">System calculating team influence profiles. Thank you for your patience.</span>
                     </div>
 
-                    <div class="text-center mt-5">
-                        <button type="submit" class="btn btn-primary btn-lg px-5 font-weight-bold shadow-sm">
+                    <!-- Submit Button (Starts Disabled) -->
+                    <div class="text-center mt-4">
+                        <button type="submit" id="btn-view-result" class="btn btn-primary btn-lg px-5 font-weight-bold shadow-sm" disabled>
                             View Assignment Result <i class="fas fa-arrow-right ml-2"></i>
                         </button>
                     </div>
                 </div>
+
+                <script>
+                    document.addEventListener("DOMContentLoaded", function () {
+                        const WAIT_TIME_SECONDS = 3; // Adjust loading duration here
+
+                        setTimeout(function () {
+                            // 1. Replace spinner with Green Checkmark
+                            const iconContainer = document.getElementById('icon-container');
+                            if (iconContainer) {
+                                iconContainer.innerHTML = `
+                                    <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 3.5rem; height: 3.5rem; font-size: 1.8rem;">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                `;
+                            }
+
+                            // 2. Update status title
+                            const title = document.getElementById('status-title');
+                            if (title) title.innerText = "Evaluation Complete";
+
+                            // 3. Update status banner to Success theme
+                            const banner = document.getElementById('status-banner');
+                            const bannerIcon = document.getElementById('banner-icon');
+                            const bannerText = document.getElementById('banner-text');
+
+                            if (banner) {
+                                banner.className = "alert alert-success border-success text-success small px-4 py-2 mt-3 font-weight-bold";
+                            }
+                            if (bannerIcon) {
+                                bannerIcon.className = "fas fa-check-circle mr-2";
+                            }
+                            if (bannerText) {
+                                bannerText.innerText = "Team influence profiles successfully calculated!";
+                            }
+
+                            // 4. Enable the Submit Button
+                            const btn = document.getElementById('btn-view-result');
+                            if (btn) btn.removeAttribute('disabled');
+
+                        }, WAIT_TIME_SECONDS * 1000);
+                    });
+                </script>
                 {% endif %}
 
 
@@ -246,7 +283,7 @@
                         <span class="font-weight-bold small"><i class="fas fa-check-circle mr-1"></i> Becker & Klein Leadership Classification Complete</span>
                     </div>
 
-                    <h4 class="font-weight-bold text-dark mb-3 text-center">Your Assigned Role: Operations Manager</h4>
+                    <h4 class="font-weight-bold text-dark mb-3 text-center">Your Assigned Role: <strong>Operations Manager</strong></h4>
 
                     <p class="text-secondary text-center mb-4">
                         Based on the Becker & Klein algorithm analysis of your questionnaire responses, <strong>you have been chosen to act as the Operations Manager for Group #104</strong>.
@@ -291,11 +328,29 @@
 
                     <hr class="my-4">
 
-                    <h5 class="font-weight-bold text-dark mb-2">Upcoming Task Setup</h5>
-                    <p class="text-secondary small mb-3">
-                        As Manager, you will review and authorize high-priority workforce allocation logs. You will have two decision-support channels available during the task:
-                    </p>
+                <h5 class="font-weight-bold text-dark mb-2">Upcoming Task Setup</h5>
+                <p class="text-secondary small mb-3">
+                    As Operations Manager, your primary responsibility is to review and authorize workforce and cargo allocation logs across fast-paced operational rounds:
+                </p>
 
+                <!-- Task Rules & Constraints Box -->
+                <div class="bg-light p-3 rounded border mb-4">
+                    <h6 class="font-weight-bold text-dark mb-2" style="font-size: 0.95rem;">
+                        <i class="fas fa-clipboard-check text-primary mr-2"></i>Task Guidelines & Rules:
+                    </h6>
+                    <ul class="text-secondary small mb-0 pl-3" style="line-height: 1.6;">
+                        <li class="mb-1">
+                            <strong>Resource Allocation:</strong> In each trial, you must distribute container loads across three transit modes: <strong>Air</strong>, <strong>Sea</strong>, and <strong>Rail</strong>.
+                        </li>
+                        <li class="mb-1">
+                            <strong>Target Constraint:</strong> The total sum across all three transit options must equal <strong>exactly 15 containers</strong> for every allocation log.
+                        </li>
+                    </ul>
+                </div>
+
+                <p class="text-secondary small mb-3">
+                    To assist you in making accurate decisions under time constraints, you will have two optional decision-support channels available during each trial:
+                </p>
                     <div class="row">
                         <!-- AI Advisor Box -->
                         <div class="col-md-6 mb-2">
@@ -324,7 +379,7 @@
                                         <i class="fas fa-user-tie text-success mr-1"></i> Subordinate Consultation
                                     </strong>
                                     <span class="text-muted extra-small d-block mb-2">
-                                        Consult Participant 103 (Scheduling Specialist) for manual review.
+                                        Consult Participant 103 (Scheduling Specialist).
                                     </span>
                                 </div>
                                 <div class="mt-2 pt-2 border-top text-center">

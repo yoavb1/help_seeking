@@ -241,7 +241,8 @@ window.onload = function() {
                     <li><strong>Consult Participant 103:</strong> Request allocation assistance from your human team member <em>(85% historical accuracy)</em>.</li>
                     <li><strong>Deploy Routing AI:</strong> Run an automated optimization script <em>(85% historical accuracy)</em>.</li>
                 </ul>
-                <p class="mb-0"><em>Note: Both support resources offer <strong>equal performance (exactly 85% accuracy)</strong>. Deploying assistance auto-populates the solution but incurs a <strong>50-point surcharge</strong> from your team performance score.</em></p>
+                <p class="mb-0"><em>Note: Both support resources offer <strong>equal performance (exactly 85% accuracy)</strong>.</em></p>
+                <p class="mb-0"><em>Deploying assistance auto-populates the solution but incurs a <strong>50-point surcharge</strong> from your team performance score.</em></p>
             </div>
             <div class="p-3 bg-light rounded border mb-3">
                 <p class="mb-1 text-primary font-weight-bold"><i class="fas fa-gift mr-1"></i> Bonus Lottery Opportunity:</p>
@@ -262,8 +263,16 @@ function showLiveTransitionModal() {
         `<div class="instruction-box">
             <p><strong>Practice Complete! You are now entering the Live Task Phase.</strong></p>
             <p>As the selected <strong>Team Leader</strong>, your operational decisions and management choices will now be formally evaluated.</p>
+
+            <p><strong>Cargo Constraints & Rules:</strong></p>
             <ul>
-                <li><strong>Task Rules:</strong> Solve or verify each allocation log correctly for <strong>+100 Points</strong>.</li>
+                <li><strong>Resource Allocation:</strong> In each trial, you must distribute container loads across three distinct transit modes: <strong>Air Cargo</strong>, <strong>Sea Freight</strong>, and <strong>Rail Express</strong>.</li>
+                <li><strong>Target Constraint:</strong> The combined sum across all three transit options must equal <strong>exactly 15 containers</strong> for every submitted log (e.g., 5 Air + 7 Sea + 3 Rail = 15).</li>
+            </ul>
+
+            <p><strong>Evaluation & Incentives:</strong></p>
+            <ul>
+                <li><strong>Scoring:</strong> Solve or verify each allocation log correctly for <strong>+100 Points</strong>.</li>
                 <li><strong>Assistance Options:</strong> You may still consult <strong>Participant 103</strong> or deploy the <strong>Routing AI</strong> <em>(both provide equal performance at 85% accuracy)</em>, but each request deducts <strong>50 Points</strong> from your score.</li>
                 <li><strong>Time Limit:</strong> Unlike the practice phase, you now have a strict limit of <strong>${maxTimePerTrial} seconds per trial</strong>!</li>
                 <li><strong>Bonus Lottery Payout:</strong> Your accumulated points at the end of this live run determine your total entries in the study's <strong>additional cash bonus lottery draw</strong>. Higher scores increase your probability of winning!</li>
@@ -291,10 +300,10 @@ function showInterstitial(title, description, buttonText, showVignette) {
         reminderBox.classList.remove('d-none');
         if (managerCondition === 'prestige') {
             reminderBox.style.borderLeft = "5px solid #007bff";
-            reminderBox.innerHTML = `<strong><i class="fas fa-award mr-2 text-primary"></i> Leadership Style Assessment Reminder:</strong><br>You were selected for your leadership profile characterized by <strong>Prestige</strong> (expertise, respect, and collaborative trust). Director Vance expects you to lead by fostering knowledge-sharing and seeking advice whenever necessary to maximize team precision.`;
+            reminderBox.innerHTML = `<strong><i class="fas fa-award mr-2 text-primary"></i> Leadership Style Assessment Reminder:</strong><br>You were selected for your leadership profile characterized by <strong>Prestige</strong> (expertise, respect, and collaborative trust). You should lead by fostering knowledge-sharing and seeking advice whenever necessary to maximize team precision.`;
         } else if (managerCondition === 'dominance') {
             reminderBox.style.borderLeft = "5px solid #dc3545";
-            reminderBox.innerHTML = `<strong><i class="fas fa-user-shield mr-2 text-danger"></i> Leadership Style Assessment Reminder:</strong><br>You were selected for your leadership profile characterized by <strong>Dominance</strong> (authority, decisiveness, and total command). Director Vance expects you to lead with complete autonomy and retain absolute control over all managerial decisions.`;
+            reminderBox.innerHTML = `<strong><i class="fas fa-user-shield mr-2 text-danger"></i> Leadership Style Assessment Reminder:</strong><br>You were selected for your leadership profile characterized by <strong>Dominance</strong> (authority, decisiveness, and total command). You should lead with complete autonomy and retain absolute control over all managerial decisions.`;
         } else {
             reminderBox.style.borderLeft = "5px solid #6c757d";
             reminderBox.innerHTML = `<strong><i class="fas fa-user-check mr-2 text-secondary"></i> Leadership Style Assessment Reminder:</strong><br>As Team Leader, maintain standard management principles and high individual performance throughout the task.`;
@@ -349,8 +358,8 @@ function startTrial() {
 
     document.getElementById('target-cargo').innerText = `${currentTrial.target} Containers`;
     document.getElementById('constraint-text-box').innerHTML = `
-        <strong>Air Constraint:</strong> ${currentTrial.air_rule} <span class="mx-2">|</span>
-        <strong>Ocean Constraint:</strong> ${currentTrial.sea_rule} <span class="mx-2">|</span>
+        <strong>Air Constraint:</strong> ${currentTrial.air_rule} <span class="mx-2"></span><hr>
+        <strong>Ocean Constraint:</strong> ${currentTrial.sea_rule} <span class="mx-2"></span><hr>
         <strong>Rail Constraint:</strong> ${currentTrial.rail_rule}
     `;
 
