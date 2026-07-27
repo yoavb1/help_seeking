@@ -55,77 +55,89 @@ def load_and_shuffle_questions(count, filename='questions.json', difficulty=None
 
 def onboarding_view(request):
     """Handles initial participant entry, Prolific ID capture, and onboarding."""
-    if 'experiment_sid' not in request.session:
-        assigned_condition = random.choice(['prestige', 'dominance'])
-        if assigned_condition == 'dominance':
-            style = 'Leads with an assertive and forceful approach, taking direct control over decisions and group behavior.' if assigned_condition == 'Dominance' else '' if assigned_condition == 'Prestige' else ''
-        elif assigned_condition == 'prestige':
-            style = 'Leads through respect and admiration, sharing valuable knowledge, skills, and expertise.'
-        else:
-            style = ''
-
-        # Capture Prolific parameters from GET query string
-        prolific_pid = request.GET.get('PROLIFIC_PID', None)
-        study_id = request.GET.get('STUDY_ID', None)
-        prolific_session_id = request.GET.get('SESSION_ID', None)
-
-        new_session = ChoiceExperimentSession.objects.create(
-            condition=assigned_condition,
-            prolific_pid=prolific_pid,
-            study_id=study_id,
-            prolific_session_id=prolific_session_id,
-        )
-        request.session['experiment_sid'] = str(new_session.session_id)
-        request.session['onboarding_step'] = 1
-        request.session['style'] = style
-
+    # 1. Safely retrieve or create the session object
     session_id = request.session.get('experiment_sid')
-    experiment_session = get_object_or_404(
-        ChoiceExperimentSession, session_id=session_id
-    )
+    experiment_session = None
 
-    if request.method == "POST":
-        current_step = request.session.get('onboarding_step', 1)
-        if current_step == 6:
-            item_1 = request.POST.get('mc_item_1')
-            item_2 = request.POST.get('mc_item_2')
-            item_3 = request.POST.get('mc_item_3')
-            item_4 = request.POST.get('mc_item_4')
-            item_5 = request.POST.get('mc_item_5')
-            item_6 = request.POST.get('mc_item_6')
-            item_7 = request.POST.get('mc_item_7')
-            item_8 = request.POST.get('mc_item_8')
-            attn_check = request.POST.get('mc_attention_check')
+    if session_id:
+        try:
+            experiment_session = ChoiceExperimentSession.objects.get(session_id=session_id)
+        except ChoiceExperimentSession.DoesNotExist:
+            # The database was cleared/reset, so clear the stale session keys
+            request.session.pop('experiment_sid', None)
+            request.session.pop('onboarding_step', None)
+            request.session.pop('style', None)
+            experiment_session = None
 
-            # Save Likert ratings
-            experiment_session.mc_item_1_respect = int(item_1) if item_1 else None
-            experiment_session.mc_item_2_control_others = int(item_2) if item_2 else None
-            experiment_session.mc_item_3_aggressive_tactics = int(item_3) if item_3 else None
-            experiment_session.mc_item_4_high_esteem = int(item_4) if item_4 else None
-            experiment_session.mc_item_5_control_vs_controlled = int(item_5) if item_5 else None
-            experiment_session.mc_item_6_way_with_others = int(item_6) if item_6 else None
-            experiment_session.mc_item_7_talents_recognized = int(item_7) if item_7 else None
-            experiment_session.mc_item_8_seek_advice = int(item_8) if item_8 else None
+        # 2. If no session exists (or was just deleted above), create a new one
+        if not experiment_session:
+            assigned_condition = random.choice(['prestige', 'dominance'])
+            if assigned_condition == 'dominance':
+                style = 'Leads with an assertive and forceful approach, taking direct control over decisions and group behavior.'
+            elif assigned_condition == 'prestige':
+                style = 'Leads through respect and admiration, sharing valuable knowledge, skills, and expertise.'
+            else:
+                style = ''
 
-            # Validate Attention Check (Participant must choose option '2')
-            if attn_check:
-                experiment_session.mc_attention_check_value = int(attn_check)
-                experiment_session.passed_attention_check = (int(attn_check) == 2)
+            # Capture Prolific parameters from GET query string
+            prolific_pid = request.GET.get('PROLIFIC_PID', None)
+            study_id = request.GET.get('STUDY_ID', None)
+            prolific_session_id = request.GET.get('SESSION_ID', None)
 
-            experiment_session.save()
+            experiment_session = ChoiceExperimentSession.objects.create(
+                condition=assigned_condition,
+                prolific_pid=prolific_pid,
+                study_id=study_id,
+                prolific_session_id=prolific_session_id,
+            )
 
-            # Onboarding finished! Redirect to dashboard for practice run
-            return redirect('experiment:practice_run')
-        else:
-            request.session['onboarding_step'] = current_step + 1
-            return redirect('experiment:onboarding')
+            request.session['experiment_sid'] = str(experiment_session.session_id)
+            request.session['onboarding_step'] = 1
+            request.session['style'] = style
 
-    step = request.session.get('onboarding_step', 1)
-    return render(
-        request,
-        'experiment/onboarding.html',
-        {'step': step, 'condition': experiment_session.condition},
-    )
+        # 3. Handle Form Submission
+        if request.method == "POST":
+            current_step = request.session.get('onboarding_step', 1)
+            if current_step == 6:
+                item_1 = request.POST.get('mc_item_1')
+                item_2 = request.POST.get('mc_item_2')
+                item_3 = request.POST.get('mc_item_3')
+                item_4 = request.POST.get('mc_item_4')
+                item_5 = request.POST.get('mc_item_5')
+                item_6 = request.POST.get('mc_item_6')
+                item_7 = request.POST.get('mc_item_7')
+                item_8 = request.POST.get('mc_item_8')
+                attn_check = request.POST.get('mc_attention_check')
+
+                # Save Likert ratings
+                experiment_session.mc_item_1_respect = int(item_1) if item_1 else None
+                experiment_session.mc_item_2_control_others = int(item_2) if item_2 else None
+                experiment_session.mc_item_3_aggressive_tactics = int(item_3) if item_3 else None
+                experiment_session.mc_item_4_high_esteem = int(item_4) if item_4 else None
+                experiment_session.mc_item_5_control_vs_controlled = int(item_5) if item_5 else None
+                experiment_session.mc_item_6_way_with_others = int(item_6) if item_6 else None
+                experiment_session.mc_item_7_talents_recognized = int(item_7) if item_7 else None
+                experiment_session.mc_item_8_seek_advice = int(item_8) if item_8 else None
+
+                # Validate Attention Check (Participant must choose option '2')
+                if attn_check:
+                    experiment_session.mc_attention_check_value = int(attn_check)
+                    experiment_session.passed_attention_check = (int(attn_check) == 2)
+
+                experiment_session.save()
+
+                # Onboarding finished! Redirect to practice run
+                return redirect('experiment:practice_run')
+            else:
+                request.session['onboarding_step'] = current_step + 1
+                return redirect('experiment:onboarding')
+
+        step = request.session.get('onboarding_step', 1)
+        return render(
+            request,
+            'experiment/onboarding.html',
+            {'step': step, 'condition': experiment_session.condition},
+        )
 
 
 def practice_run_view(request):
