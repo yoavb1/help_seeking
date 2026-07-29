@@ -13,7 +13,7 @@ from django.db import transaction
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
-from .models import ChoiceExperimentSession, ParticipantTrial
+from .models import *
 
 # 💡 Set your Prolific Completion Code here:
 PROLIFIC_COMPLETION_CODE = "C1234XYZ"
@@ -78,6 +78,8 @@ def onboarding_view(request):
     # 2. Create a new session if none exists
     if not experiment_session:
         assigned_condition = random.choice(['prestige', 'dominance'])
+        request.session['show_ai_first'] = random.choice([True, False])
+        print(request.session['show_ai_first'])
         if assigned_condition == 'dominance':
             style = 'Leads with an assertive and forceful approach, taking direct control over decisions and group behavior.'
         else:
@@ -155,6 +157,7 @@ def practice_run_view(request):
     questions = load_and_shuffle_questions(count=max_trials, filename='questions_practice.json')
 
     context = {
+        'show_ai_first': request.session['show_ai_first'],
         'session': session,
         'style': request.session['style'],
         'is_practice': True,
@@ -183,6 +186,7 @@ def dashboard_view(request):
     questions = load_and_shuffle_questions(count=max_trials, filename='questions_live.json')
 
     context = {
+        'show_ai_first': request.session['show_ai_first'],
         'session': session,
         'is_practice': False,
         'style': request.session['style'],
@@ -218,7 +222,6 @@ def submit_trial(request):
 
             is_correct = t.get("is_correct", False)
             help_choice = t.get("help_chosen", "none")
-            advisor_role = t.get("advisor_role", "none")
 
             # 1. Save THIS trial immediately to the DB
             ParticipantTrial.objects.create(
@@ -226,17 +229,20 @@ def submit_trial(request):
                 trial_number=t.get("trial_number"),
                 difficulty=diff_code,
                 help_chosen=help_choice,
-                advisor_role=advisor_role,
                 reaction_time=t.get("reaction_time", 0.0),
                 is_correct=is_correct,
                 running_score=t.get("running_score", 0),
             )
 
-            # 2. Increment parent session metrics incrementally
+            # Award +3 for correct answer
             if is_correct:
-                session.total_score = (session.total_score or 0) + 100
+                session.total_score += 3
+
+            # Subtract 1 point surcharge for seeking help (Human or AI)
             if help_choice != "none":
+                session.total_score -= 1
                 session.total_help_sought = (session.total_help_sought or 0) + 1
+
             if help_choice == "human":
                 session.human_clicks = (session.human_clicks or 0) + 1
             elif help_choice == "ai":
@@ -282,17 +288,18 @@ def submit_task(request):
             for t in trials_data:
                 is_correct = t.get('is_correct', False)
                 help_choice = t.get('help_chosen', 'none')
-                advisor_role = t.get('advisor_role', 'none')
 
                 # Normalize difficulty code safely
                 raw_diff = str(t.get('difficulty', 'E')).upper()
                 diff_code = diff_map.get(raw_diff, 'E')
 
-                # Tally metrics
+                # Tally metrics with updated scoring
                 if is_correct:
-                    total_score += 100
+                    total_score += 3
                 if help_choice != 'none':
+                    total_score -= 1  # 1 point deduction for seeking help
                     total_help += 1
+
                 if help_choice == 'human':
                     human_cnt += 1
                 elif help_choice == 'ai':
@@ -305,7 +312,6 @@ def submit_task(request):
                         trial_number=t.get('trial_number'),
                         difficulty=diff_code,
                         help_chosen=help_choice,
-                        advisor_role=advisor_role,
                         reaction_time=t.get('reaction_time', 0.0),
                         is_correct=is_correct,
                         running_score=t.get('running_score', 0),
@@ -339,40 +345,103 @@ def submit_task(request):
 
 
 def survey_view(request):
-    """Handles capturing the updated Likert survey evaluation metrics."""
+    """Handles capturing evaluation metrics and creating a SurveyResponse record."""
     session_id = request.session.get('experiment_sid')
     session = get_object_or_404(
         ChoiceExperimentSession, session_id=session_id
     )
 
     if request.method == "POST":
-        status_reduction = request.POST.get('status_reduction')
-        incompetent = request.POST.get('incompetent')
-        inexperienced = request.POST.get('inexperienced')
-        lesser = request.POST.get('lesser')
-        org_status_hurt = request.POST.get('org_status_hurt')
-        held_against = request.POST.get('held_against')
-
-        session.status_reduction = (
-            int(status_reduction) if status_reduction else None
-        )
-        session.incompetent_rating = int(incompetent) if incompetent else None
-        session.inexperienced_rating = (
-            int(inexperienced) if inexperienced else None
-        )
-        session.lesser_rating = int(lesser) if lesser else None
-        session.org_status_hurt_rating = (
-            int(org_status_hurt) if org_status_hurt else None
-        )
-        session.held_against_rating = (
-            int(held_against) if held_against else None
-        )
+        # 1. Save directly to ChoiceExperimentSession (for trial-by-trial CSV export)
+        session.status_reduction = request.POST.get('status_reduction')
+        session.incompetent_rating = request.POST.get('incompetent')
+        session.inexperienced_rating = request.POST.get('inexperienced')
+        session.lesser_rating = request.POST.get('lesser')
+        session.org_status_hurt_rating = request.POST.get('org_status_hurt')
+        session.held_against_rating = request.POST.get('held_against')
         session.save()
+
+        # 2. ALSO save to SurveyResponse model (for standalone Survey Dashboard tab & CSV)
+        SurveyResponse.objects.create(
+            # Section 1
+            nervous_seeking=request.POST.get('nervous_seeking'),
+            task_anxiety=request.POST.get('task_anxiety'),
+            task_difficulty=request.POST.get('task_difficulty'),
+
+            # Section 2
+            status_reduction=request.POST.get('status_reduction'),
+            incompetent=request.POST.get('incompetent'),
+            inexperienced=request.POST.get('inexperienced'),
+            lesser=request.POST.get('lesser'),
+            org_status_hurt=request.POST.get('org_status_hurt'),
+            held_against=request.POST.get('held_against'),
+
+            # Section 3
+            subordinate_rejection_concern=request.POST.get('subordinate_rejection_concern'),
+            subordinate_compliance_expectation=request.POST.get('subordinate_compliance_expectation'),
+
+            # Section 4
+            relational_strengthen=request.POST.get('relational_strengthen'),
+            relational_trust=request.POST.get('relational_trust'),
+            relational_collaboration=request.POST.get('relational_collaboration'),
+            relational_value_subordinate=request.POST.get('relational_value_subordinate'),
+
+            # Section 5
+            instrumental_human=request.POST.get('instrumental_human'),
+            instrumental_ai=request.POST.get('instrumental_ai'),
+            perceived_competence_human=request.POST.get('perceived_competence_human'),
+            perceived_competence_ai=request.POST.get('perceived_competence_ai')
+        )
 
         return redirect('experiment:demographics')
 
     return render(request, 'experiment/survey.html')
 
+
+def workspace_survey(request):
+    if request.method == 'POST':
+        # Extract data from the request POST dictionary
+        response = SurveyResponse(
+            # Section 1
+            nervous_seeking=request.POST.get('nervous_seeking'),
+            task_anxiety=request.POST.get('task_anxiety'),
+            task_difficulty=request.POST.get('task_difficulty'),
+
+            # Section 2
+            status_reduction=request.POST.get('status_reduction'),
+            incompetent=request.POST.get('incompetent'),
+            inexperienced=request.POST.get('inexperienced'),
+            lesser=request.POST.get('lesser'),
+            org_status_hurt=request.POST.get('org_status_hurt'),
+            held_against=request.POST.get('held_against'),
+
+            # Section 3
+            subordinate_rejection_concern=request.POST.get('subordinate_rejection_concern'),
+            subordinate_compliance_expectation=request.POST.get('subordinate_compliance_expectation'),
+
+            # Section 4
+            relational_strengthen=request.POST.get('relational_strengthen'),
+            relational_trust=request.POST.get('relational_trust'),
+            relational_collaboration=request.POST.get('relational_collaboration'),
+            relational_value_subordinate=request.POST.get('relational_value_subordinate'),
+
+            # Section 5
+            instrumental_human=request.POST.get('instrumental_human'),
+            instrumental_ai=request.POST.get('instrumental_ai'),
+            perceived_competence_human=request.POST.get('perceived_competence_human'),
+            perceived_competence_ai=request.POST.get('perceived_competence_ai')
+        )
+
+        # Save to database
+        response.save()
+
+        # Save primary key to session if you need to access it in the next view (e.g., Demographics)
+        request.session['survey_response_id'] = response.id
+
+        # Redirect to your demographics page
+        return redirect('demographics_view')
+
+    return render(request, 'survey.html')
 
 def demographics_view(request):
     """Handles capturing age and gender diagnostics."""
@@ -444,8 +513,11 @@ def admin_dashboard(request):
 
 @staff_member_required
 def analytics_dashboard(request):
-    """Admin dashboard displaying summary metrics and detailed trial & session records."""
+    """Admin dashboard displaying summary metrics, trial records, and workspace survey responses."""
     trials = ParticipantTrial.objects.select_related('session').all()
+
+    # Fetch all workspace survey responses for the new dashboard tab
+    survey_responses = SurveyResponse.objects.all().order_by('-created_at')
 
     # Summary metric calculations
     total_count = trials.count()
@@ -460,6 +532,8 @@ def analytics_dashboard(request):
 
     context = {
         'trials': trials,
+        'survey_responses': survey_responses,
+        'total_responses': survey_responses.count(),
         'accuracy_rate': accuracy_rate,
         'avg_rt': avg_rt,
         'ai_usage_rate': ai_usage_rate,
@@ -467,13 +541,9 @@ def analytics_dashboard(request):
     return render(request, 'admin_dashboard.html', context)
 
 
-# Alias to retain compatibility if referenced elsewhere in urls.py
-admin_dashboard = analytics_dashboard
-
-
 @staff_member_required
 def download_trials_csv(request):
-    """Exports all trial, session, manipulation check, survey, and demographic data to CSV."""
+    """Exports all trial, session, manipulation check, full workspace survey, and demographic data to CSV."""
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = 'attachment; filename="experiment_all_data.csv"'
 
@@ -496,7 +566,6 @@ def download_trials_csv(request):
         "Trial Number",
         "Difficulty",
         "Help Chosen",
-        "Advisor Role",
         "Reaction Time (s)",
         "Is Correct",
         "Running Score",
@@ -513,13 +582,26 @@ def download_trials_csv(request):
         "Attention Check Value",
         "Passed Attention Check",
 
-        # Post-Task Survey Ratings
+        # Post-Task Workspace Survey (Section 1 to Section 5)
+        "Nervous Seeking",
+        "Task Anxiety",
+        "Task Difficulty",
         "Status Reduction",
         "Incompetent Rating",
         "Inexperienced Rating",
         "Lesser Rating",
         "Org Status Hurt Rating",
         "Held Against Rating",
+        "Subordinate Rejection Concern",
+        "Subordinate Compliance Expectation",
+        "Relational Strengthen",
+        "Relational Trust",
+        "Relational Collaboration",
+        "Relational Value Subordinate",
+        "Instrumental Human",
+        "Instrumental AI",
+        "Perceived Competence Human",
+        "Perceived Competence AI",
 
         # Demographics
         "Participant Age",
@@ -530,6 +612,9 @@ def download_trials_csv(request):
 
     for t in trials:
         s = t.session
+        # Fetch matching survey response if linked via session or user
+        survey = getattr(s, 'survey_response', None) if s else None
+
         writer.writerow([
             # Session Metadata
             getattr(s, "session_id", "N/A") if s else "N/A",
@@ -546,7 +631,6 @@ def download_trials_csv(request):
             t.trial_number,
             t.difficulty,
             t.help_chosen,
-            t.advisor_role,
             t.reaction_time,
             t.is_correct,
             t.running_score,
@@ -563,13 +647,26 @@ def download_trials_csv(request):
             getattr(s, "mc_attention_check_value", "") if s else "",
             getattr(s, "passed_attention_check", False) if s else False,
 
-            # Post-Task Survey Ratings
-            getattr(s, "status_reduction", "") if s else "",
-            getattr(s, "incompetent_rating", "") if s else "",
-            getattr(s, "inexperienced_rating", "") if s else "",
-            getattr(s, "lesser_rating", "") if s else "",
-            getattr(s, "org_status_hurt_rating", "") if s else "",
-            getattr(s, "held_against_rating", "") if s else "",
+            # Post-Task Workspace Survey Data
+            getattr(survey, "nervous_seeking", getattr(s, "nervous_seeking", "")),
+            getattr(survey, "task_anxiety", getattr(s, "task_anxiety", "")),
+            getattr(survey, "task_difficulty", getattr(s, "task_difficulty", "")),
+            getattr(survey, "status_reduction", getattr(s, "status_reduction", "")),
+            getattr(survey, "incompetent", getattr(s, "incompetent_rating", "")),
+            getattr(survey, "inexperienced", getattr(s, "inexperienced_rating", "")),
+            getattr(survey, "lesser", getattr(s, "lesser_rating", "")),
+            getattr(survey, "org_status_hurt", getattr(s, "org_status_hurt_rating", "")),
+            getattr(survey, "held_against", getattr(s, "held_against_rating", "")),
+            getattr(survey, "subordinate_rejection_concern", ""),
+            getattr(survey, "subordinate_compliance_expectation", ""),
+            getattr(survey, "relational_strengthen", ""),
+            getattr(survey, "relational_trust", ""),
+            getattr(survey, "relational_collaboration", ""),
+            getattr(survey, "relational_value_subordinate", ""),
+            getattr(survey, "instrumental_human", ""),
+            getattr(survey, "instrumental_ai", ""),
+            getattr(survey, "perceived_competence_human", ""),
+            getattr(survey, "perceived_competence_ai", ""),
 
             # Demographics
             getattr(s, "participant_age", "") if s else "",
@@ -579,21 +676,52 @@ def download_trials_csv(request):
     return response
 
 @staff_member_required
+def download_survey_csv(request):
+    """Exports standalone workspace survey data to CSV."""
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="workspace_survey_responses.csv"'
+
+    writer = csv.writer(response)
+
+    writer.writerow([
+        "ID", "Submitted At",
+        "Nervous Seeking", "Task Anxiety", "Task Difficulty",
+        "Status Reduction", "Incompetent", "Inexperienced", "Lesser", "Org Status Hurt", "Held Against",
+        "Subordinate Rejection Concern", "Subordinate Compliance Expectation",
+        "Relational Strengthen", "Relational Trust", "Relational Collaboration", "Relational Value Subordinate",
+        "Instrumental Human", "Instrumental AI", "Perceived Competence Human", "Perceived Competence AI"
+    ])
+
+    for r in SurveyResponse.objects.all().order_by('-created_at'):
+        writer.writerow([
+            r.id,
+            r.created_at.strftime("%Y-%m-%d %H:%M:%S") if hasattr(r, 'created_at') else "",
+            r.nervous_seeking, r.task_anxiety, r.task_difficulty,
+            r.status_reduction, r.incompetent, r.inexperienced, r.lesser, r.org_status_hurt, r.held_against,
+            r.subordinate_rejection_concern, r.subordinate_compliance_expectation,
+            r.relational_strengthen, r.relational_trust, r.relational_collaboration, r.relational_value_subordinate,
+            r.instrumental_human, r.instrumental_ai, r.perceived_competence_human, r.perceived_competence_ai
+        ])
+
+    return response
+
+
+@staff_member_required
 @require_POST
 def clear_all_experiment_data(request):
-    """Deletes all session and trial records without dropping schema or user accounts."""
+    """Deletes all session, trial, and survey records without dropping schema or user accounts."""
     try:
         with transaction.atomic():
-            # ParticipantTrial records will auto-delete via CASCADE if foreign key is set,
-            # but deleting both explicitly guarantees clean resets across all DB engines.
             trial_count, _ = ParticipantTrial.objects.all().delete()
             session_count, _ = ChoiceExperimentSession.objects.all().delete()
+            survey_count, _ = SurveyResponse.objects.all().delete()
 
         messages.success(
             request,
-            f"Successfully cleared all data: {session_count} sessions and {trial_count} trials removed."
+            f"Successfully cleared all data: {session_count} sessions, {trial_count} trials, and {survey_count} survey responses removed."
         )
     except Exception as e:
         messages.error(request, f"Failed to clear data: {str(e)}")
 
-    return redirect('experiment:analytics_dashboard')
+    return redirect(
+        'experiment:analytics_dashboard')

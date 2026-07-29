@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-j32h-$k6+4=n6wfm76z0y^ti!nmie=ui8%+0al#jw(scsya#&5'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     'yoavbny.pythonanywhere.com',
@@ -129,6 +129,6 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Experiment Configuration
-EXPERIMENT_PRACTICE_TRIALS = 5
-EXPERIMENT_LIVE_TRIALS = 50
+EXPERIMENT_PRACTICE_TRIALS = 3
+EXPERIMENT_LIVE_TRIALS = 10
 TIME_LIMIT = 20

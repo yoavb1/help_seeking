@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Workspace Survey</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body { background-color: #f4f6f9; min-height: 100vh; padding: 40px 0; }
+        .survey-card { border: none; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 950px; }
+        .likert-table th, .likert-table td { text-align: center; vertical-align: middle !important; font-size: 0.95rem; }
+        .likert-table td:first-child { text-align: left; font-weight: 500; }
+        .section-header { border-left: 4px solid #007bff; padding-left: 10px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card survey-card p-4 p-md-5 mx-auto bg-white">
+            <div class="text-primary mb-3 text-center">
+                <i class="fas fa-clipboard-list fa-3x"></i>
+            </div>
+            <h3 class="font-weight-bold text-dark text-center mb-2">Workspace & Strategy Evaluation</h3>
+            <p class="text-secondary text-center small mb-5">Please indicate your level of agreement with the following statements based on your experience during the task.</p>
+
+            <form method="POST" action="">
+                {% csrf_token %}
+
+                <!-- SECTION 1: TASK & STATE EXPERIENCE -->
+                <div class="mb-5">
+                    <h5 class="font-weight-bold text-dark section-header">Workspace Evaluation</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered likert-table bg-white shadow-sm">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th style="width: 45%;">Statement</th>
+                                    <th>Strongly Disagree</th>
+                                    <th>Disagree</th>
+                                    <th>Neutral</th>
+                                    <th>Agree</th>
+                                    <th>Strongly Agree</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>During the experiment, I felt nervous about asking for feedback/help.</td>
+                                    <td><input type="radio" name="nervous_seeking" value="1" required></td>
+                                    <td><input type="radio" name="nervous_seeking" value="2"></td>
+                                    <td><input type="radio" name="nervous_seeking" value="3"></td>
+                                    <td><input type="radio" name="nervous_seeking" value="4"></td>
+                                    <td><input type="radio" name="nervous_seeking" value="5"></td>
+                                </tr>
+                                <tr>
+                                    <td>I felt anxious during the execution of the task.</td>
+                                    <td><input type="radio" name="task_anxiety" value="1" required></td>
+                                    <td><input type="radio" name="task_anxiety" value="2"></td>
+                                    <td><input type="radio" name="task_anxiety" value="3"></td>
+                                    <td><input type="radio" name="task_anxiety" value="4"></td>
+                                    <td><input type="radio" name="task_anxiety" value="5"></td>
+                                </tr>
+                                <tr>
+                                    <td>Overall, I found the task to be difficult.</td>
+                                    <td><input type="radio" name="task_difficulty" value="1" required></td>
+                                    <td><input type="radio" name="task_difficulty" value="2"></td>
+                                    <td><input type="radio" name="task_difficulty" value="3"></td>
+                                    <td><input type="radio" name="task_difficulty" value="4"></td>
+                                    <td><input type="radio" name="task_difficulty" value="5"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: SOCIAL COSTS & STATUS CONCERNS -->
+                <div class="mb-5">
+                    <h5 class="font-weight-bold text-dark section-header">Social Costs & Status Concerns</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered likert-table bg-white shadow-sm">
+                            I was concerned that asking my subordinate for help:
+                            <thead class="thead-light">
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>May reduce my status relative to them.</td>
+                                    <td><input type="radio" name="status_reduction" value="1" required></td>
+                                    <td><input type="radio" name="status_reduction" value="2"></td>
+                                    <td><input type="radio" name="status_reduction" value="3"></td>
+                                    <td><input type="radio" name="status_reduction" value="4"></td>
+                                    <td><input type="radio" name="status_reduction" value="5"></td>
+                                </tr>
+                                <tr>
+                                    <td>Asking someone you work with for help makes you seem incompetent.</td>
+                                    <td><input type="radio" name="incompetent" value="1" required></td>
+                                    <td><input type="radio" name="incompetent" value="2"></td>
+                                    <td><input type="radio" name="incompetent" value="3"></td>
+                                    <td><input type="radio" name="incompetent" value="4"></td>
+                                    <td><input type="radio" name="incompetent" value="5"></td>
+                                </tr>
+                                <tr>
+                                    <td>Asking someone you work with for help makes you seem inexperienced.</td>
+                                    <td><input type="radio" name="inexperienced" value="1" required></td>
+                                    <td><input type="radio" name="inexperienced" value="2"></td>
+                                    <td><input type="radio" name="inexperienced" value="3"></td>
+                                    <td><input type="radio" name="inexperienced" value="4"></td>
+                                    <td><input type="radio" name="inexperienced" value="5"></td>
+                                </tr>
+                                <tr>
+                                    <td>Asking someone you work with for help makes you seem lesser than them.</td>
+                                    <td><input type="radio" name="lesser" value="1" required></td>
+                                    <td><input type="radio" name="lesser" value="2"></td>
+                                    <td><input type="radio" name="lesser" value="3"></td>
+                                    <td><input type="radio" name="lesser" value="4"></td>
+                                    <td><input type="radio" name="lesser" value="5"></td>
+                                </tr>
+                                <tr>
+                                    <td>Asking someone you work with for help hurts your status in the organization.</td>
+                                    <td><input type="radio" name="org_status_hurt" value="1" required></td>
+                                    <td><input type="radio" name="org_status_hurt" value="2"></td>
+                                    <td><input type="radio" name="org_status_hurt" value="3"></td>
+                                    <td><input type="radio" name="org_status_hurt" value="4"></td>
+                                    <td><input type="radio" name="org_status_hurt" value="5"></td>
+                                </tr>
+                                <tr>
+                                    <td>If I ask others for help, it will be held against me.</td>
+                                    <td><input type="radio" name="held_against" value="1" required></td>
+                                    <td><input type="radio" name="held_against" value="2"></td>
+                                    <td><input type="radio" name="held_against" value="3"></td>
+                                    <td><input type="radio" name="held_against" value="4"></td>
+                                    <td><input type="radio" name="held_against" value="5"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: ASSISTANCE COMPLIANCE LIKELIHOOD (FLYNN & LAKE) -->
+                <div class="mb-5">
+                    <h5 class="font-weight-bold text-dark section-header">Expectations of Assistance Compliance</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered likert-table bg-white shadow-sm">
+                            <tbody>
+                                <tr>
+                                    <td>I was concerned that my subordinate would not agree to assist me.</td>
+                                    <td><input type="radio" name="subordinate_rejection_concern" value="1" required></td>
+                                    <td><input type="radio" name="subordinate_rejection_concern" value="2"></td>
+                                    <td><input type="radio" name="subordinate_rejection_concern" value="3"></td>
+                                    <td><input type="radio" name="subordinate_rejection_concern" value="4"></td>
+                                    <td><input type="radio" name="subordinate_rejection_concern" value="5"></td>
+                                </tr>
+                                <tr>
+                                    <td>I expected my subordinate would agree to assist me.</td>
+                                    <td><input type="radio" name="subordinate_compliance_expectation" value="1" required></td>
+                                    <td><input type="radio" name="subordinate_compliance_expectation" value="2"></td>
+                                    <td><input type="radio" name="subordinate_compliance_expectation" value="3"></td>
+                                    <td><input type="radio" name="subordinate_compliance_expectation" value="4"></td>
+                                    <td><input type="radio" name="subordinate_compliance_expectation" value="5"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SECTION 4: RELATIONAL BENEFITS (SUBORDINATE) -->
+                <div class="mb-5">
+                    <h5 class="font-weight-bold text-dark section-header">Relational & Interpersonal Impact</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered likert-table bg-white shadow-sm">
+                            <tbody>
+                                <tr>
+                                    <td>I believed asking my subordinate for help would strengthen our working relationship.</td>
+                                    <td><input type="radio" name="relational_strengthen" value="1" required></td>
+                                    <td><input type="radio" name="relational_strengthen" value="2"></td>
+                                    <td><input type="radio" name="relational_strengthen" value="3"></td>
+                                    <td><input type="radio" name="relational_strengthen" value="4"></td>
+                                    <td><input type="radio" name="relational_strengthen" value="5"></td>
+                                </tr>
+                                <tr>
+                                    <td>I expected asking for my subordinate's help would build mutual trust.</td>
+                                    <td><input type="radio" name="relational_trust" value="1" required></td>
+                                    <td><input type="radio" name="relational_trust" value="2"></td>
+                                    <td><input type="radio" name="relational_trust" value="3"></td>
+                                    <td><input type="radio" name="relational_trust" value="4"></td>
+                                    <td><input type="radio" name="relational_trust" value="5"></td>
+                                </tr>
+                                <tr>
+                                    <td>I believed asking for help would improve our future collaboration.</td>
+                                    <td><input type="radio" name="relational_collaboration" value="1" required></td>
+                                    <td><input type="radio" name="relational_collaboration" value="2"></td>
+                                    <td><input type="radio" name="relational_collaboration" value="3"></td>
+                                    <td><input type="radio" name="relational_collaboration" value="4"></td>
+                                    <td><input type="radio" name="relational_collaboration" value="5"></td>
+                                </tr>
+                                <tr>
+                                    <td>I thought asking for help would make my subordinate feel more valued.</td>
+                                    <td><input type="radio" name="relational_value_subordinate" value="1" required></td>
+                                    <td><input type="radio" name="relational_value_subordinate" value="2"></td>
+                                    <td><input type="radio" name="relational_value_subordinate" value="3"></td>
+                                    <td><input type="radio" name="relational_value_subordinate" value="4"></td>
+                                    <td><input type="radio" name="relational_value_subordinate" value="5"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SECTION 5: INSTRUMENTAL VALUE & PERCEIVED COMPETENCE -->
+                <div class="mb-5">
+                    <h5 class="font-weight-bold text-dark section-header">Advisor Utility & Perceived Competence</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered likert-table bg-white shadow-sm">
+                            <tbody>
+                                <tr>
+                                    <td>I asked my subordinate because I believed they could improve my decision.</td>
+                                    <td><input type="radio" name="instrumental_human" value="1" required></td>
+                                    <td><input type="radio" name="instrumental_human" value="2"></td>
+                                    <td><input type="radio" name="instrumental_human" value="3"></td>
+                                    <td><input type="radio" name="instrumental_human" value="4"></td>
+                                    <td><input type="radio" name="instrumental_human" value="5"></td>
+                                </tr>
+                                <tr>
+                                    <td>I asked the AI because I believed it could improve my decision.</td>
+                                    <td><input type="radio" name="instrumental_ai" value="1" required></td>
+                                    <td><input type="radio" name="instrumental_ai" value="2"></td>
+                                    <td><input type="radio" name="instrumental_ai" value="3"></td>
+                                    <td><input type="radio" name="instrumental_ai" value="4"></td>
+                                    <td><input type="radio" name="instrumental_ai" value="5"></td>
+                                </tr>
+                                <tr>
+                                    <td>I considered my subordinate to be highly competent at this task.</td>
+                                    <td><input type="radio" name="perceived_competence_human" value="1" required></td>
+                                    <td><input type="radio" name="perceived_competence_human" value="2"></td>
+                                    <td><input type="radio" name="perceived_competence_human" value="3"></td>
+                                    <td><input type="radio" name="perceived_competence_human" value="4"></td>
+                                    <td><input type="radio" name="perceived_competence_human" value="5"></td>
+                                </tr>
+                                <tr>
+                                    <td>I considered the AI to be highly competent at this task.</td>
+                                    <td><input type="radio" name="perceived_competence_ai" value="1" required></td>
+                                    <td><input type="radio" name="perceived_competence_ai" value="2"></td>
+                                    <td><input type="radio" name="perceived_competence_ai" value="3"></td>
+                                    <td><input type="radio" name="perceived_competence_ai" value="4"></td>
+                                    <td><input type="radio" name="perceived_competence_ai" value="5"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-5 font-weight-bold shadow-sm">
+                        Continue to Demographics <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

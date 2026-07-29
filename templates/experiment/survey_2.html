@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Workspace Survey</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body { background-color: #f4f6f9; min-height: 100vh; display: flex; align-items: center; padding: 40px 0; }
+        .survey-card { border: none; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 900px; }
+        .likert-table th, .likert-table td { text-align: center; vertical-align: middle !important; font-size: 0.95rem; }
+        .likert-table td:first-child { text-align: left; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card survey-card p-5 mx-auto">
+            <div class="text-primary mb-3 text-center">
+                <i class="fas fa-clipboard-list fa-3x"></i>
+            </div>
+            <h3 class="font-weight-bold text-dark text-center mb-2">Workspace Evaluation</h3>
+            <p class="text-secondary text-center small mb-4">Please indicate your level of agreement with the following statements regarding workplace help-seeking.</p>
+
+            <form method="POST" action="">
+                {% csrf_token %}
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered likert-table bg-white shadow-sm">
+                        <thead class="thead-light">
+                            <tr>
+                                <th style="width: 45%;">Statement</th>
+                                <th>Strongly Disagree</th>
+                                <th>Disagree</th>
+                                <th>Neutral</th>
+                                <th>Agree</th>
+                                <th>Strongly Agree</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Asking someone you work with for help reduces your status relative to them.</td>
+                                <td><input type="radio" name="status_reduction" value="1" required></td>
+                                <td><input type="radio" name="status_reduction" value="2"></td>
+                                <td><input type="radio" name="status_reduction" value="3"></td>
+                                <td><input type="radio" name="status_reduction" value="4"></td>
+                                <td><input type="radio" name="status_reduction" value="5"></td>
+                            </tr>
+                            <tr>
+                                <td>Asking someone you work with for help makes you seem incompetent.</td>
+                                <td><input type="radio" name="incompetent" value="1" required></td>
+                                <td><input type="radio" name="incompetent" value="2"></td>
+                                <td><input type="radio" name="incompetent" value="3"></td>
+                                <td><input type="radio" name="incompetent" value="4"></td>
+                                <td><input type="radio" name="incompetent" value="5"></td>
+                            </tr>
+                            <tr>
+                                <td>Asking someone you work with for help makes you seem inexperienced.</td>
+                                <td><input type="radio" name="inexperienced" value="1" required></td>
+                                <td><input type="radio" name="inexperienced" value="2"></td>
+                                <td><input type="radio" name="inexperienced" value="3"></td>
+                                <td><input type="radio" name="inexperienced" value="4"></td>
+                                <td><input type="radio" name="inexperienced" value="5"></td>
+                            </tr>
+                            <tr>
+                                <td>Asking someone you work with for help makes you seem lesser than them.</td>
+                                <td><input type="radio" name="lesser" value="1" required></td>
+                                <td><input type="radio" name="lesser" value="2"></td>
+                                <td><input type="radio" name="lesser" value="3"></td>
+                                <td><input type="radio" name="lesser" value="4"></td>
+                                <td><input type="radio" name="lesser" value="5"></td>
+                            </tr>
+                            <tr>
+                                <td>Asking someone you work with for help hurts your status in the organization.</td>
+                                <td><input type="radio" name="org_status_hurt" value="1" required></td>
+                                <td><input type="radio" name="org_status_hurt" value="2"></td>
+                                <td><input type="radio" name="org_status_hurt" value="3"></td>
+                                <td><input type="radio" name="org_status_hurt" value="4"></td>
+                                <td><input type="radio" name="org_status_hurt" value="5"></td>
+                            </tr>
+                            <tr>
+                                <td>If I ask others for help, it will be held against me.</td>
+                                <td><input type="radio" name="held_against" value="1" required></td>
+                                <td><input type="radio" name="held_against" value="2"></td>
+                                <td><input type="radio" name="held_against" value="3"></td>
+                                <td><input type="radio" name="held_against" value="4"></td>
+                                <td><input type="radio" name="held_against" value="5"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg px-5 font-weight-bold shadow-sm">
+                        Continue to Demographics <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

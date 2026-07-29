@@ -112,33 +112,65 @@
         <div class="mb-3 text-center">
             <h4 class="font-weight-bold mb-2 text-primary">
                 <i class="fas fa-hands-helping mr-2"></i>Consultation Assistance Available
-                <span class="badge badge-danger ml-2 font-weight-normal" style="font-size: 0.9rem;">Cost: -50 PTS</span>
+                <span class="badge badge-danger ml-2 font-weight-normal" style="font-size: 0.9rem;">Cost: -1 PTS</span>
             </h4>
             <p class="text-muted mb-0 mx-auto" style="max-width: 650px; font-size: 1.05rem;">
-                As Team Leader, you may choose to delegate and request assistance from either your team member or the automated AI script.
+                As Team Leader, you may choose to request assistance from either a team member (your subordinate) or the automated AI.
             </p>
         </div>
 
         <!-- Prominent Centered Buttons Container -->
-        <div class="d-flex justify-content-center align-items-center flex-wrap my-3">
-            <button type="button"
-                    class="btn btn-success font-weight-bold shadow-sm m-2"
-                    id="btn-help-human"
-                    style="padding: 16px 28px; font-size: 1.25rem; min-width: 260px;">
-                <i class="fas fa-user-tie mr-2"></i> Consult Participant 103
-            </button>
+        <!-- Vertically Stacked Buttons Container -->
+        <div class="d-flex flex-column align-items-center my-3">
 
-            <button type="button"
-                    class="btn btn-primary font-weight-bold shadow-sm m-2"
-                    id="btn-help-ai"
-                    style="padding: 16px 28px; font-size: 1.25rem; min-width: 260px;">
-                <i class="fas fa-robot mr-2"></i> Deploy Routing AI
-            </button>
+            {% if show_ai_first %}
+                <!-- AI Button (Top) -->
+                <button type="button"
+                        class="btn btn-primary font-weight-bold shadow-sm my-2"
+                        id="btn-help-ai"
+                        style="padding: 16px 28px; font-size: 1.25rem; width: 100%; max-width: 450px;">
+                    <i class="fas fa-robot mr-2"></i> Consult the AI
+                </button>
+
+                <!-- HORIZONTAL DIVIDER LINE -->
+                <hr style="width: 100%; max-width: 450px; border-top: 2px solid #cbd5e1; margin: 12px 0;">
+
+                <!-- Subordinate Button (Bottom) -->
+                <button type="button"
+                        class="btn btn-success font-weight-bold shadow-sm my-2"
+                        id="btn-help-human"
+                        style="padding: 16px 28px; font-size: 1.25rem; width: 100%; max-width: 450px;">
+                    <i class="fas fa-user-tie mr-2"></i> Consult the subordinate
+                </button>
+
+            {% else %}
+
+                <!-- Subordinate Button (Top) -->
+                <button type="button"
+                        class="btn btn-success font-weight-bold shadow-sm my-2"
+                        id="btn-help-human"
+                        style="padding: 16px 28px; font-size: 1.25rem; width: 100%; max-width: 450px;">
+                    <i class="fas fa-user-tie mr-2"></i> Consult the subordinate
+                </button>
+
+                <!-- HORIZONTAL DIVIDER LINE -->
+                <hr style="width: 100%; max-width: 450px; border-top: 2px solid #cbd5e1; margin: 12px 0;">
+
+                <!-- AI Button (Bottom) -->
+                <button type="button"
+                        class="btn btn-primary font-weight-bold shadow-sm my-2"
+                        id="btn-help-ai"
+                        style="padding: 16px 28px; font-size: 1.25rem; width: 100%; max-width: 450px;">
+                    <i class="fas fa-robot mr-2"></i> Consult the AI
+                </button>
+
+            {% endif %}
+
         </div>
 
         <!-- Confirmation Tag -->
         <div class="mt-2 text-danger font-weight-bold d-none text-center" id="advisor-confirmation-tag" style="font-size: 0.95rem;">
-            <i class="fas fa-exclamation-triangle mr-1"></i> Support deployed: Allocation auto-populated. A 50-point fee will apply upon submission.
+            <i class="fas fa-exclamation-triangle mr-1"></i> Support deployed: Allocation auto-populated. A 1-point fee will apply upon submission.
         </div>
     </div>
 </div>
@@ -233,23 +265,8 @@ window.onload = function() {
     if (isPracticeMode) {
         showInterstitial(
             "Welcome, Operations Manager",
-            `<div class="instruction-box">
-                <p><strong>Your Leadership Role & Task Mission:</strong></p>
-                <p>You have been appointed as the <strong>Operations Team Leader</strong>. Your team is responsible for managing global logistics container distribution across Air, Ocean, and Rail routes.</p>
-                <p>As the manager, your task is to review routing constraints and correctly authorize allocations totaling 15 units. To assist you in making decisions under high workload, you have two support resources available:</p>
-                <ul>
-                    <li><strong>Consult Participant 103:</strong> Request allocation assistance from your human team member <em>(85% historical accuracy)</em>.</li>
-                    <li><strong>Deploy Routing AI:</strong> Run an automated optimization script <em>(85% historical accuracy)</em>.</li>
-                </ul>
-                <p class="mb-0"><em>Note: Both support resources offer <strong>equal performance (exactly 85% accuracy)</strong>.</em></p>
-                <p class="mb-0"><em>Deploying assistance auto-populates the solution but incurs a <strong>50-point surcharge</strong> from your team performance score.</em></p>
-            </div>
-            <div class="p-3 bg-light rounded border mb-3">
-                <p class="mb-1 text-primary font-weight-bold"><i class="fas fa-gift mr-1"></i> Bonus Lottery Opportunity:</p>
-                <p class="small text-muted mb-0">Your final score during the live evaluation directly impacts your chance to win a <strong>cash bonus reward</strong>! Each point earned acts as a ticket entry into an experimental lottery draw at the end of the study.</p>
-            </div>
-            <p><strong>Practice Phase Rules:</strong> To get familiar with the system interfaces and decision controls, you will first complete <strong>${dataset.length} untimed practice trials.</strong></p>`,
-            `Begin Practice Phase (${dataset.length} Untimed Trials)`,
+            `<p><strong>Practice Phase Rules:</strong> To get familiar with the system interfaces and decision controls, you will first complete 3 untimed practice trials.</p>`,
+            `Begin Practice Phase (3 Untimed Trials)`,
             false
         );
     } else {
@@ -262,20 +279,17 @@ function showLiveTransitionModal() {
         "🚨 Live Evaluation Phase Initializing",
         `<div class="instruction-box">
             <p><strong>Practice Complete! You are now entering the Live Task Phase.</strong></p>
-            <p>As the selected <strong>Team Leader</strong>, your operational decisions and management choices will now be formally evaluated.</p>
-
-            <p><strong>Cargo Constraints & Rules:</strong></p>
-            <ul>
-                <li><strong>Resource Allocation:</strong> In each trial, you must distribute container loads across three distinct transit modes: <strong>Air Cargo</strong>, <strong>Sea Freight</strong>, and <strong>Rail Express</strong>.</li>
-                <li><strong>Target Constraint:</strong> The combined sum across all three transit options must equal <strong>exactly 15 containers</strong> for every submitted log (e.g., 5 Air + 7 Sea + 3 Rail = 15).</li>
-            </ul>
-
-            <p><strong>Evaluation & Incentives:</strong></p>
-            <ul>
-                <li><strong>Scoring:</strong> Solve or verify each allocation log correctly for <strong>+100 Points</strong>.</li>
-                <li><strong>Assistance Options:</strong> You may still consult <strong>Participant 103</strong> or deploy the <strong>Routing AI</strong> <em>(both provide equal performance at 85% accuracy)</em>, but each request deducts <strong>50 Points</strong> from your score.</li>
+                <li><strong>Assistance Options:</strong> Remember, you may still consult <strong>subordinate - Participant 103</strong> or <strong>AI assitant</strong> <em>(both provide equal performance at 85% accuracy)</em>, but each request deducts <strong>1 Point</strong> from your score.</li>
                 <li><strong>Time Limit:</strong> Unlike the practice phase, you now have a strict limit of <strong>${maxTimePerTrial} seconds per trial</strong>!</li>
                 <li><strong>Bonus Lottery Payout:</strong> Your accumulated points at the end of this live run determine your total entries in the study's <strong>additional cash bonus lottery draw</strong>. Higher scores increase your probability of winning!</li>
+                {% if condition == 'dominance' %}
+                    <li>Remember, you have been chosen to act in the upcoming simulation - as the <strong>Operations Manager</strong> for your group, <strong>you are expected to lead with a dominant and assertive style</strong>.
+                        Specifically, in interactions with members within the group, you are <strong>controlling</strong> and are seen as a manager who is <strong>forceful</strong> in your behavior towards others. You remain an asset to the company. You remain an asset to the company.</li>
+                {% endif %}
+                {% if condition == 'prestige' %}
+                            Based on the Becker & Klein questionnaire results, you have been chosen to act in the upcoming simulation - as the <strong>Operations Manager</strong> for your group, <strong>you are expected to lead with a respect and admiration style.</strong>
+                            Specifically, in interactions with members within the group, you share your <strong>knowledge</strong>, <strong>expertise</strong>, and <strong>skills</strong>, and are seen as a manager who is granted <strong>high esteem</strong> from others. You remain an asset to the company.
+                {% endif %}
             </ul>
         </div>`,
         `Start Live Task (${maxTimePerTrial}s Per Trial)`,
@@ -300,10 +314,13 @@ function showInterstitial(title, description, buttonText, showVignette) {
         reminderBox.classList.remove('d-none');
         if (managerCondition === 'prestige') {
             reminderBox.style.borderLeft = "5px solid #007bff";
-            reminderBox.innerHTML = `<strong><i class="fas fa-award mr-2 text-primary"></i> Leadership Style Assessment Reminder:</strong><br>You were selected for your leadership profile characterized by <strong>Prestige</strong> (expertise, respect, and collaborative trust). You should lead by fostering knowledge-sharing and seeking advice whenever necessary to maximize team precision.`;
+            reminderBox.innerHTML = `<strong><i class="fas fa-award mr-2 text-primary"></i> Leadership Style Assessment Reminder:</strong><br>
+                            You have been chosen to act in the upcoming simulation - as the <strong>Operations Manager</strong> for your group, <strong>you are expected to lead with a dominant and assertive style</strong>.
+                            Specifically, in interactions with members within the group, you are <strong>controlling</strong> and are seen as a manager who is <strong>forceful</strong> in your behavior towards others. You remain an asset to the company. You remain an asset to the company.`;
         } else if (managerCondition === 'dominance') {
             reminderBox.style.borderLeft = "5px solid #dc3545";
-            reminderBox.innerHTML = `<strong><i class="fas fa-user-shield mr-2 text-danger"></i> Leadership Style Assessment Reminder:</strong><br>You were selected for your leadership profile characterized by <strong>Dominance</strong> (authority, decisiveness, and total command). You should lead with complete autonomy and retain absolute control over all managerial decisions.`;
+            reminderBox.innerHTML = `<strong><i class="fas fa-user-shield mr-2 text-danger"></i> Leadership Style Assessment Reminder:</strong><br>You have been chosen to act in the upcoming simulation - as the <strong>Operations Manager</strong> for your group, <strong>you are expected to lead with a respect and admiration style.</strong>
+                            Specifically, in interactions with members within the group, you share your <strong>knowledge</strong>, <strong>expertise</strong>, and <strong>skills</strong>, and are seen as a manager who is granted <strong>high esteem</strong> from others. You remain an asset to the company.`;
         } else {
             reminderBox.style.borderLeft = "5px solid #6c757d";
             reminderBox.innerHTML = `<strong><i class="fas fa-user-check mr-2 text-secondary"></i> Leadership Style Assessment Reminder:</strong><br>As Team Leader, maintain standard management principles and high individual performance throughout the task.`;
@@ -433,27 +450,27 @@ function processSubmission(timeout) {
     let feedbackBanner = document.getElementById('central-feedback-banner');
     feedbackBanner.classList.remove('d-none');
 
-    let pointsEarned = isCorrect ? 100 : 0;
-    let costIncurred = (selectedHelpThisTrial !== 'none') ? 50 : 0;
+    let pointsEarned = isCorrect ? 3 : 0;
+    let costIncurred = (selectedHelpThisTrial !== 'none') ? 1 : 0;
     let netGain = pointsEarned - costIncurred;
 
     if (isCorrect) {
-        rollingScore += netGain;
-        feedbackBanner.className = "alert alert-success text-center font-weight-bold mb-4 py-3";
-        if (isPracticeMode) {
-            feedbackBanner.innerHTML = `<i class="fas fa-check-circle mr-2"></i>[PRACTICE ONLY] Correct Authorization! Simulated Gain: +${netGain} Points.`;
+            rollingScore += netGain;
+            feedbackBanner.className = "alert alert-success text-center font-weight-bold mb-4 py-3";
+        feedbackBanner.innerHTML = `<i class="fas fa-check-circle mr-2"></i>✓ SUCCESS: +${netGain} Lottery Points.`;
         } else {
-            feedbackBanner.innerHTML = costIncurred > 0 ? `<i class="fas fa-check-circle mr-2"></i>✓ SUCCESS: Log Authorized! Net Gain: +50 Lottery Points.` : `<i class="fas fa-check-circle mr-2"></i>✓ SUCCESS: Log Authorized! (+100 Lottery Points).`;
+            rollingScore -= costIncurred;
+            feedbackBanner.className = "alert alert-danger text-center font-weight-bold mb-4 py-3";
+            if (timeout) {
+                feedbackBanner.innerHTML = costIncurred > 0
+                    ? `<i class="fas fa-hourglass-end mr-2"></i>⏱ TIMEOUT: Consultation Fee Applied (-${costIncurred} Point).`
+                    : `<i class="fas fa-hourglass-end mr-2"></i>⏱ TIMEOUT: Time expired (0 Points).`;
+            } else {
+                feedbackBanner.innerHTML = costIncurred > 0
+                    ? `<i class="fas fa-times-circle mr-2"></i>❌ ALLOCATION ERROR: Consultation Fee Applied (-${costIncurred} Point).`
+                    : `<i class="fas fa-times-circle mr-2"></i>❌ ALLOCATION ERROR: Incorrect answer (0 Points).`;
+            }
         }
-    } else {
-        rollingScore -= costIncurred;
-        feedbackBanner.className = "alert alert-danger text-center font-weight-bold mb-4 py-3";
-        if (isPracticeMode) {
-            feedbackBanner.innerHTML = `<i class="fas fa-times-circle mr-2"></i>[PRACTICE ONLY] Incorrect Allocation. Simulated Net: -${costIncurred} Points.`;
-        } else {
-            feedbackBanner.innerHTML = timeout ? `<i class="fas fa-hourglass-end mr-2"></i>⏱ TIMEOUT: Fee Applied (-50 Points).` : `<i class="fas fa-times-circle mr-2"></i>❌ ALLOCATION ERROR: Fee Applied (-50 Points).`;
-        }
-    }
 
     if (rollingScore < 0) rollingScore = 0;
     document.getElementById('live-score-display').innerText = `${rollingScore} PTS`;
@@ -461,7 +478,7 @@ function processSubmission(timeout) {
     if (!isPracticeMode) {
         // Build the trial payload object
         const trialPayload = {
-            trial_number: currentTrialIndex + 1,
+            trial_number: currentTrialIndex + 3,
             difficulty: currentTrial.difficulty,
             help_chosen: selectedHelpThisTrial,
             advisor_role: currentAdvisorRole,

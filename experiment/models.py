@@ -33,14 +33,6 @@ class ChoiceExperimentSession(models.Model):
     mc_attention_check_value = models.IntegerField(null=True, blank=True)
     passed_attention_check = models.BooleanField(default=False)
 
-    # Post-Experiment Mediation Metrics (Help-Seeking / Image Cost Scale)
-    status_reduction = models.IntegerField(null=True, blank=True)
-    incompetent_rating = models.IntegerField(null=True, blank=True)
-    inexperienced_rating = models.IntegerField(null=True, blank=True)
-    lesser_rating = models.IntegerField(null=True, blank=True)
-    org_status_hurt_rating = models.IntegerField(null=True, blank=True)
-    held_against_rating = models.IntegerField(null=True, blank=True)
-
     # Post-Experiment Demographics
     participant_age = models.IntegerField(null=True, blank=True)
     participant_gender = models.CharField(max_length=30, null=True, blank=True)
@@ -69,17 +61,6 @@ class ParticipantTrial(models.Model):
 
     help_chosen = models.CharField(max_length=10, choices=[('none', 'None'), ('human', 'Human'), ('ai', 'AI')])
 
-    advisor_role = models.CharField(
-        max_length=20,
-        default='none',
-        choices=[
-            ('none', 'None'),
-            ('manager', 'Manager'),
-            ('peer', 'Peer'),
-            ('subordinate', 'Subordinate'),
-        ],
-    )
-
     reaction_time = models.FloatField()
     is_correct = models.BooleanField(default=False)
     running_score = models.IntegerField(default=0)
@@ -89,3 +70,41 @@ class ParticipantTrial(models.Model):
 
     def __str__(self):
         return f"Session {self.session.session_id} | Trial {self.trial_number} | Score: {self.running_score}"
+
+
+class SurveyResponse(models.Model):
+    # Optional: Associate with a user or session
+    # user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # 1. Task Experience
+    nervous_seeking = models.IntegerField()
+    task_anxiety = models.IntegerField()
+    task_difficulty = models.IntegerField()
+
+    # 2. Social Costs & Status Concerns
+    status_reduction = models.IntegerField()
+    incompetent = models.IntegerField()
+    inexperienced = models.IntegerField()
+    lesser = models.IntegerField()
+    org_status_hurt = models.IntegerField()
+    held_against = models.IntegerField()
+
+    # 3. Expectations of Assistance Compliance
+    subordinate_rejection_concern = models.IntegerField()
+    subordinate_compliance_expectation = models.IntegerField()
+
+    # 4. Relational & Interpersonal Impact
+    relational_strengthen = models.IntegerField()
+    relational_trust = models.IntegerField()
+    relational_collaboration = models.IntegerField()
+    relational_value_subordinate = models.IntegerField()
+
+    # 5. Advisor Utility & Perceived Competence
+    instrumental_human = models.IntegerField()
+    instrumental_ai = models.IntegerField()
+    perceived_competence_human = models.IntegerField()
+    perceived_competence_ai = models.IntegerField()
+
+    def __str__(self):
+        return f"Survey Response {self.id} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
