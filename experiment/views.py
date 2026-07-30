@@ -79,7 +79,6 @@ def onboarding_view(request):
     if not experiment_session:
         assigned_condition = random.choice(['prestige', 'dominance'])
         request.session['show_ai_first'] = random.choice([True, False])
-        print(request.session['show_ai_first'])
         if assigned_condition == 'dominance':
             style = 'Leads with an assertive and forceful approach, taking direct control over decisions and group behavior.'
         else:

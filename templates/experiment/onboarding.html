@@ -20,6 +20,15 @@
         /* Custom Dynamic Spinner */
         .loading-spinner { width: 3.5rem; height: 3.5rem; border: 4px solid #e9ecef; border-top: 4px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Custom Dynamic Spinner */
+            .loading-spinner { width: 3.5rem; height: 3.5rem; border: 4px solid #e9ecef; border-top: 4px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+            /* ADD THESE NEW LINES HERE */
+            .slot-icon { transition: all 0.5s ease-in-out; }
+            .slot-icon.connected { color: #28a745 !important; transform: scale(1.15); }
+            .opacity-35 { opacity: 0.35; }
     </style>
 </head>
 <body>
@@ -29,7 +38,7 @@
             <form method="POST" action="">
                 {% csrf_token %}
 
-                <!-- ========================================== -->
+<!-- ========================================== -->
                 <!-- SCREEN 1: WELCOME SCREEN -->
                 <!-- ========================================== -->
                 {% if step == 1 %}
@@ -55,10 +64,109 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary btn-lg px-5 mt-2 font-weight-bold shadow-sm">
-                        Begin Session <i class="fas fa-arrow-right ml-2"></i>
-                    </button>
+                    <!-- 1. INITIAL START BUTTON -->
+                    <div id="welcome-action-box">
+                        <button type="button" id="btn-start-matchmaking" class="btn btn-primary btn-lg px-5 mt-2 font-weight-bold shadow-sm">
+                            Join Group Workspace <i class="fas fa-users ml-2"></i>
+                        </button>
+                    </div>
+
+                    <!-- 2. ANIMATED MATCHMAKING LOADER (HIDDEN INITIALLY) -->
+                    <div id="matchmaking-container" class="d-none mt-4 p-4 border rounded bg-light">
+                        <h5 class="font-weight-bold text-dark mb-1">Connecting to Group Workspace...</h5>
+                        <p class="text-muted small mb-3">Matching active participants into your 4-person team</p>
+
+                        <!-- Spinner -->
+                        <div class="my-3">
+                            <div class="loading-spinner"></div>
+                        </div>
+
+                        <!-- Dynamic Status Message -->
+                        <div class="font-weight-bold text-primary mb-3" id="matchmaking-status-text">
+                            Searching for active participants...
+                        </div>
+
+                        <!-- 4 Participant Slot Icons -->
+                        <div class="d-flex justify-content-center align-items-center my-3">
+                            <div class="mx-3 text-center slot-icon connected" id="slot-1">
+                                <i class="fas fa-user-circle fa-2x"></i>
+                                <small class="d-block font-weight-bold mt-1">You</small>
+                            </div>
+                            <div class="mx-3 text-center slot-icon text-muted opacity-35" id="slot-2">
+                                <i class="fas fa-user-circle fa-2x"></i>
+                                <small class="d-block font-weight-bold mt-1">P2</small>
+                            </div>
+                            <div class="mx-3 text-center slot-icon text-muted opacity-35" id="slot-3">
+                                <i class="fas fa-user-circle fa-2x"></i>
+                                <small class="d-block font-weight-bold mt-1">P3</small>
+                            </div>
+                            <div class="mx-3 text-center slot-icon text-muted opacity-35" id="slot-4">
+                                <i class="fas fa-user-circle fa-2x"></i>
+                                <small class="d-block font-weight-bold mt-1">P4</small>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="progress mx-auto mt-3" style="height: 8px; max-width: 400px; border-radius: 4px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                                 id="matchmaking-progress"
+                                 role="progressbar"
+                                 style="width: 25%;"></div>
+                        </div>
+
+                        <!-- HIDDEN FORM SUBMIT BUTTON (Triggered automatically once matched) -->
+                        <button type="submit" id="btn-submit-step1" class="d-none"></button>
+                    </div>
                 </div>
+
+                <script>
+                    document.addEventListener("DOMContentLoaded", function () {
+                        const startBtn = document.getElementById('btn-start-matchmaking');
+                        const welcomeBox = document.getElementById('welcome-action-box');
+                        const loaderContainer = document.getElementById('matchmaking-container');
+                        const statusText = document.getElementById('matchmaking-status-text');
+                        const progressBar = document.getElementById('matchmaking-progress');
+                        const submitBtn = document.getElementById('btn-submit-step1');
+
+                        if (startBtn) {
+                            startBtn.addEventListener('click', function () {
+                                // Hide button, show animation container
+                                welcomeBox.classList.add('d-none');
+                                loaderContainer.classList.remove('d-none');
+
+                                let connectedCount = 1;
+                                const totalSlots = 4;
+
+                                const interval = setInterval(() => {
+                                    connectedCount++;
+
+                                    // Light up participant slots green one by one
+                                    const currentSlot = document.getElementById(`slot-${connectedCount}`);
+                                    if (currentSlot) {
+                                        currentSlot.classList.remove('text-muted', 'opacity-35');
+                                        currentSlot.classList.add('connected');
+                                    }
+
+                                    // Update progress bar
+                                    const percent = (connectedCount / totalSlots) * 100;
+                                    progressBar.style.width = `${percent}%`;
+                                    statusText.innerText = `Matched (${connectedCount}/${totalSlots} Participants Connected)...`;
+
+                                    // When 4/4 connected, submit form to Step 2 (Consent)
+                                    if (connectedCount === totalSlots) {
+                                        clearInterval(interval);
+                                        statusText.className = "font-weight-bold text-success mb-3";
+                                        statusText.innerText = "✓ 4/4 Participants Found! Initializing Workspace...";
+
+                                        setTimeout(() => {
+                                            submitBtn.click();
+                                        }, 1000);
+                                    }
+                                }, 1500); // Fills a new participant slot every 1.5s
+                            });
+                        }
+                    });
+                </script>
                 {% endif %}
 
 
@@ -357,26 +465,26 @@
 
                     {% if condition == 'dominance' %}
                     <!-- DOMINANCE MANIPULATION -->
-                    <div class="p-4 rounded mb-4" style="background-color: #fff5f5; border-left: 5px solid #dc3545;">
-                        <h6 class="font-weight-bold text-danger mb-2"><i class="fas fa-user-shield mr-2"></i> Leadership Profile Feedback</h6>
-                        <p class="text-dark small mb-2" style="line-height: 1.6;">
+                    <div class="p-4 rounded mb-4" style="background-color: #f8f9fa; border-left: 5px solid #6c757d;">
+                        <h6 class="font-weight-bold text-primary mb-2"><i class="fas fa-user-shield mr-2"></i> Leadership Profile Feedback</h6>
+                        <p class="text-dark mb-3" style="line-height: 1.6; font-size: 1.05rem;">
                             Based on the Becker & Klein questionnaire results, you have been chosen to act in the upcoming simulation - as the <strong>Operations Manager</strong> for your group, <strong>you are expected to lead with a dominant and assertive style</strong>.
                             Specifically, in interactions with members within the group, you are <strong>controlling</strong> and are seen as a manager who is <strong>forceful</strong> in your behavior towards others. You remain an asset to the company. You remain an asset to the company.
                         </p>
-                        <p class="text-danger small font-weight-bold mb-0">
+                        <p class="text-primary font-weight-bold mb-0" style="font-size: 1rem;">
                             Please make sure you embody and follow this management style throughout the upcoming task.
                         </p>
                     </div>
 
                     {% elif condition == 'prestige' %}
                     <!-- PRESTIGE MANIPULATION -->
-                    <div class="p-4 rounded mb-4" style="background-color: #f0f7ff; border-left: 5px solid #007bff;">
+                    <div class="p-4 rounded mb-4" style="background-color: #f8f9fa; border-left: 5px solid #6c757d;">
                         <h6 class="font-weight-bold text-primary mb-2"><i class="fas fa-award mr-2"></i> Leadership Profile Feedback</h6>
-                        <p class="text-dark small mb-2" style="line-height: 1.6;">
+                        <p class="text-dark mb-3" style="line-height: 1.6; font-size: 1.05rem;">
                             Based on the Becker & Klein questionnaire results, you have been chosen to act in the upcoming simulation - as the <strong>Operations Manager</strong> for your group, <strong>you are expected to lead with a respect and admiration style.</strong>
                             Specifically, in interactions with members within the group, you share your <strong>knowledge</strong>, <strong>expertise</strong>, and <strong>skills</strong>, and are seen as a manager who is granted <strong>high esteem</strong> from others. You remain an asset to the company.
                         </p>
-                        <p class="text-primary small font-weight-bold mb-0">
+                        <p class="text-primary font-weight-bold mb-0" style="font-size: 1rem;">
                             Please make sure you embody and follow this management style throughout the upcoming task.
                         </p>
                     </div>
@@ -508,7 +616,7 @@
                                 <strong>Target Constraint:</strong> The total sum across all three transit options must equal <strong>exactly 15 containers</strong> for every allocation log.
                             </li>
                             <li class="mb-1">
-                                <strong>Scoring & Assistance Surcharge:</strong> You will earn <strong>+3 points</strong> for every correct allocation decision. Consulting an advisor (Participant 103 or the AI) incurs a <strong>1-point surcharge (-1 point)</strong> from your score.                            </li>
+                                <strong>Scoring & Assistance Surcharge:</strong> You will earn <strong>+3 points</strong> for every correct allocation decision. Consulting an advisor (subordinate or AI) incurs a <strong>1-point surcharge (-1 point)</strong> from your score.                            </li>
                             <li class="mb-1">
                                 <strong>Bonus Lottery:</strong> In addition to your base participation payout, the points you earn during the upcoming task will be converted directly into lottery tickets for a $10 bonus prize. The more tickets you collect, the higher your probability of winning!
                             </li>
@@ -519,7 +627,7 @@
                     </div>
 
                     <p class="text-secondary small mb-3">
-                        To assist you in evaluating, balancing, and prioritizing competing objectives under strict time constraints, you have two decision-support channels available:
+                        To assist you in the task, you have two decision-support channels available:
                     </p>
 
                     <div class="row">
