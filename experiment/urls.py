@@ -13,12 +13,12 @@ urlpatterns = [
     path('submit-trial/', views.submit_trial, name='submit_trial'),
     path('submit-task/', views.submit_task, name='submit_task'),
     path('survey/', views.survey_view, name='survey'),
+    path('task_update_notice/', views.task_update_notice, name='task_update_notice'),
     path('demographics/', views.demographics_view, name='demographics'),
     path('thank-you/', views.thank_you_view, name='thank_you'),
     path('export/trials-csv/',views.download_trials_csv, name="download_trials_csv",),
     path('export/survey-csv/', views.download_survey_csv, name="export_survey_csv"),  # ADDED HERE
 
-    path('admin-dashboard/', views.analytics_dashboard, name='analytics_dashboard'),
     path('admin-dashboard/', views.analytics_dashboard, name='analytics_dashboard'),
     path('admin-dashboard/clear-data/', views.clear_all_experiment_data, name='clear_all_experiment_data'),
 ]

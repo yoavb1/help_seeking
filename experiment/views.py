@@ -80,9 +80,9 @@ def onboarding_view(request):
         assigned_condition = random.choice(['prestige', 'dominance'])
         request.session['show_ai_first'] = random.choice([True, False])
         if assigned_condition == 'dominance':
-            style = 'Leads with an assertive and forceful approach, taking direct control over decisions and group behavior.'
+            style = 'Leads with dominant and assertiveness. Controlling and forceful towards others.'
         else:
-            style = 'Leads through respect and admiration, sharing valuable knowledge, skills, and expertise.'
+            style = 'Leads with respect and admiration. Sharing information and skills with others.'
 
         # Capture Prolific parameters from GET query string
         prolific_pid = request.GET.get('PROLIFIC_PID', None)
@@ -131,8 +131,15 @@ def onboarding_view(request):
 
             experiment_session.save()
 
-            # Onboarding finished! Redirect to practice run
+            # Advance to Step 7 (Overview & Task Rules)
+            request.session['onboarding_step'] = 7
+            return redirect('experiment:onboarding')
+
+        # STEP 7: Final Onboarding Step (Task Overview) -> Redirect to Practice Run
+        elif current_step == 7:
+            # Clear or complete onboarding session step if needed, then finish onboarding
             return redirect('experiment:practice_run')
+
         else:
             request.session['onboarding_step'] = current_step + 1
             return redirect('experiment:onboarding')
@@ -392,7 +399,7 @@ def survey_view(request):
             perceived_competence_ai=request.POST.get('perceived_competence_ai')
         )
 
-        return redirect('experiment:demographics')
+        return redirect('experiment:task_update_notice')
 
     return render(request, 'experiment/survey.html')
 
@@ -438,9 +445,19 @@ def workspace_survey(request):
         request.session['survey_response_id'] = response.id
 
         # Redirect to your demographics page
-        return redirect('demographics_view')
+        return redirect('task_update_notice')
 
     return render(request, 'survey.html')
+
+
+def task_update_notice(request):
+    """
+    Dedicated transition screen informing participants
+    that Task 2 is skipped due to time constraints.
+    """
+
+    return render(request, 'experiment/task_update.html')
+
 
 def demographics_view(request):
     """Handles capturing age and gender diagnostics."""

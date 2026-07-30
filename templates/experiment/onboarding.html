@@ -21,14 +21,9 @@
         .loading-spinner { width: 3.5rem; height: 3.5rem; border: 4px solid #e9ecef; border-top: 4px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Custom Dynamic Spinner */
-            .loading-spinner { width: 3.5rem; height: 3.5rem; border: 4px solid #e9ecef; border-top: 4px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
-            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-            /* ADD THESE NEW LINES HERE */
-            .slot-icon { transition: all 0.5s ease-in-out; }
-            .slot-icon.connected { color: #28a745 !important; transform: scale(1.15); }
-            .opacity-35 { opacity: 0.35; }
+        .slot-icon { transition: all 0.5s ease-in-out; }
+        .slot-icon.connected { color: #28a745 !important; transform: scale(1.15); }
+        .opacity-35 { opacity: 0.35; }
     </style>
 </head>
 <body>
@@ -38,43 +33,43 @@
             <form method="POST" action="">
                 {% csrf_token %}
 
-<!-- ========================================== -->
+                <!-- ========================================== -->
                 <!-- SCREEN 1: WELCOME SCREEN -->
                 <!-- ========================================== -->
                 {% if step == 1 %}
                 <div class="text-center py-2">
                     <div class="text-primary mb-4"><i class="fas fa-university fa-4x"></i></div>
-                    <h3 class="font-weight-bold text-dark mb-3">Welcome to the Research Workspace Simulation</h3>
+                    <h3 class="font-weight-bold text-dark mb-3">Welcome to the Workspace Simulation</h3>
                     <p class="text-secondary leading-relaxed mb-4">
                         Thank you for agreeing to participate in this study. This research project investigates strategic decision-making, resource allocation, and operational workflow management in modern team environments.
                     </p>
 
                     <div class="row text-left my-4 bg-light p-3 rounded border">
                         <div class="col-6 mb-2">
-                            <small class="text-muted font-weight-bold"><i class="fas fa-clock mr-1 text-primary"></i> Estimated Duration:</small><br>
-                            <span class="text-dark">12–15 Minutes</span>
+                            <large class="text-muted font-weight-bold"><i class="fas fa-clock mr-1 text-primary"></i> Estimated Duration:</large><br>
+                            <span class="text-dark">~10 Minutes</span>
                         </div>
                         <div class="col-6 mb-2">
-                            <small class="text-muted font-weight-bold"><i class="fas fa-desktop mr-1 text-primary"></i> Recommended Device:</small><br>
+                            <large class="text-muted font-weight-bold"><i class="fas fa-desktop mr-1 text-primary"></i> Recommended Device:</large><br>
                             <span class="text-dark">Desktop / Laptop</span>
                         </div>
                         <div class="col-12 mt-2">
-                            <small class="text-muted font-weight-bold"><i class="fas fa-users mr-1 text-primary"></i> Environment Setup:</small><br>
-                            <span class="text-dark">You will be matched into a virtual 4-person workspace group.</span>
+                            <large class="text-muted font-weight-bold"><i class="fas fa-users mr-1 text-primary"></i> Environment Setup:</large><br>
+                            <span class="text-dark">You will be matched in real-time with 3 other active participants currently online.</span>
                         </div>
                     </div>
 
                     <!-- 1. INITIAL START BUTTON -->
                     <div id="welcome-action-box">
                         <button type="button" id="btn-start-matchmaking" class="btn btn-primary btn-lg px-5 mt-2 font-weight-bold shadow-sm">
-                            Join Group Workspace <i class="fas fa-users ml-2"></i>
+                            Join Team Workspace <i class="fas fa-users ml-2"></i>
                         </button>
                     </div>
 
                     <!-- 2. ANIMATED MATCHMAKING LOADER (HIDDEN INITIALLY) -->
                     <div id="matchmaking-container" class="d-none mt-4 p-4 border rounded bg-light">
-                        <h5 class="font-weight-bold text-dark mb-1">Connecting to Group Workspace...</h5>
-                        <p class="text-muted small mb-3">Matching active participants into your 4-person team</p>
+                        <h5 class="font-weight-bold text-dark mb-1">Connecting to Team Workspace...</h5>
+                        <p class="text-muted large mb-3">Matching active participants into your 4-person team</p>
 
                         <!-- Spinner -->
                         <div class="my-3">
@@ -90,19 +85,19 @@
                         <div class="d-flex justify-content-center align-items-center my-3">
                             <div class="mx-3 text-center slot-icon connected" id="slot-1">
                                 <i class="fas fa-user-circle fa-2x"></i>
-                                <small class="d-block font-weight-bold mt-1">You</small>
+                                <large class="d-block font-weight-bold mt-1">You</large>
                             </div>
                             <div class="mx-3 text-center slot-icon text-muted opacity-35" id="slot-2">
                                 <i class="fas fa-user-circle fa-2x"></i>
-                                <small class="d-block font-weight-bold mt-1">P2</small>
+                                <large class="d-block font-weight-bold mt-1">P2</large>
                             </div>
                             <div class="mx-3 text-center slot-icon text-muted opacity-35" id="slot-3">
                                 <i class="fas fa-user-circle fa-2x"></i>
-                                <small class="d-block font-weight-bold mt-1">P3</small>
+                                <large class="d-block font-weight-bold mt-1">P3</large>
                             </div>
                             <div class="mx-3 text-center slot-icon text-muted opacity-35" id="slot-4">
                                 <i class="fas fa-user-circle fa-2x"></i>
-                                <small class="d-block font-weight-bold mt-1">P4</small>
+                                <large class="d-block font-weight-bold mt-1">P4</large>
                             </div>
                         </div>
 
@@ -176,9 +171,9 @@
                 {% if step == 2 %}
                 <div>
                     <h4 class="font-weight-bold text-dark text-center mb-3">Informed Consent Form</h4>
-                    <p class="text-muted text-center small mb-3">Please review the research terms carefully before providing your consent to proceed.</p>
+                    <p class="text-muted text-center large mb-3">Please review the research terms carefully before providing your consent to proceed.</p>
 
-                    <div class="p-3 bg-white border rounded text-secondary small mb-4" style="max-height: 280px; overflow-y: scroll; line-height: 1.6;">
+                    <div class="p-3 bg-white border rounded text-secondary large mb-4" style="max-height: 280px; overflow-y: scroll; line-height: 1.6;">
                         <p>This study is being conducted by Prof. Ilanit SimanTov-Nachlieli and Prof. Daniel Heller from Tel Aviv University.</p>
                         <p>You will first answer several questions about yourself and your current workplace.
                             Then, you will be presented with a work-related scenario, followed by additional questions.</p>
@@ -189,7 +184,7 @@
 
                     <div class="custom-control custom-checkbox mb-4 text-center">
                         <input type="checkbox" class="custom-control-input" id="consentCheck" required>
-                        <label class="custom-control-label text-dark font-weight-bold small" for="consentCheck">
+                        <label class="custom-control-label text-dark font-weight-bold large" for="consentCheck">
                             I confirm that I am at least 18 years old, have read the terms above, and explicitly consent to participate.
                         </label>
                     </div>
@@ -208,10 +203,10 @@
                 <!-- ========================================== -->
                 {% if step == 3 %}
                 <div>
-                    <h4 class="font-weight-bold text-dark mb-3">Group Setup & Task Overview</h4>
+                    <h4 class="font-weight-bold text-dark mb-3">Team Setup & Simulation Overview</h4>
 
                     <p class="text-secondary">Welcome to the team decision-making phase of the study.</p>
-                    <p class="text-secondary">You have been successfully matched into a <strong>4-person workspace group</strong>.</p>
+                    <p class="text-secondary">You have been successfully matched into a <strong>4-person workspace team</strong>.</p>
 
                     <div class="p-3 my-4 bg-light border border-info rounded text-center">
                         <span class="text-muted font-weight-bold">Assigned Identification:</span> <strong class="text-dark">Participant 102</strong>
@@ -220,11 +215,7 @@
                     <hr class="my-4">
 
                     <p class="text-secondary">
-                        To facilitate the completion of this task, we will assign a leader to your team. We will use the validated <strong>Becker & Klein leadership influence classification paradigm</strong> to ascertain a group leader based on individual behavioral traits and provide a description of his/her leadership style.
-                    </p>
-
-                    <p class="text-secondary mb-4">
-                        On the next page, you will complete the validated assessment questionnaire. The system will evaluate all members' responses to determine group role assignments.
+                        To facilitate the completion of this task, we will assign a leader to your team. We will use the validated <strong>Becker & Klein leadership classification survey</strong> to choose a team leader.
                     </p>
 
                     <div class="text-center mt-4">
@@ -241,8 +232,8 @@
                 <!-- ========================================== -->
                 {% if step == 4 %}
                 <div>
-                    <h4 class="font-weight-bold text-dark mb-1 text-center">Leadership Orientation Assessment</h4>
-                    <p class="text-secondary text-center small mb-4">Please indicate your level of agreement with each statement. Your answers will be analyzed by the system.</p>
+                    <h4 class="font-weight-bold text-dark mb-1 text-center">Leadership Assessment</h4>
+                    <p class="text-secondary text-center large mb-4">Please indicate your level of agreement with each statement. Your answers will be analyzed by the system.</p>
 
                     <!-- LIKERT MATRIX TABLE -->
                     <div class="table-responsive">
@@ -250,18 +241,18 @@
                             <thead>
                                 <tr class="bg-light">
                                     <th class="statement-head border-0"></th>
-                                    <th>Not at all true<br><small class="text-muted">1</small></th>
-                                    <th><small class="text-muted">2</small></th>
-                                    <th><small class="text-muted">3</small></th>
-                                    <th><small class="text-muted">4</small></th>
-                                    <th><small class="text-muted">5</small></th>
-                                    <th><small class="text-muted">6</small></th>
-                                    <th>Very true<br><small class="text-muted">7</small></th>
+                                    <th>Not at all true<br><large class="text-muted">1</large></th>
+                                    <th><large class="text-muted">2</large></th>
+                                    <th><large class="text-muted">3</large></th>
+                                    <th><large class="text-muted">4</large></th>
+                                    <th><large class="text-muted">5</large></th>
+                                    <th><large class="text-muted">6</large></th>
+                                    <th>Very true<br><large class="text-muted">7</large></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td class="likert-statement">The best way to build a team is to set a group goal that is highly challenging, maybe even "crazy."</td>
+                                    <td class="likert-statement">The best way to build a team is to set a team goal that is highly challenging, maybe even "crazy."</td>
                                     {% for i in "1234567" %}
                                     <td><input type="radio" name="q1" value="{{ i }}" class="likert-radio" required></td>
                                     {% endfor %}
@@ -320,22 +311,22 @@
                         <div class="loading-spinner"></div>
                     </div>
 
-                    <h4 class="font-weight-bold text-dark mt-2" id="status-title">Evaluating Group Responses</h4>
+                    <h4 class="font-weight-bold text-dark mt-2" id="status-title">Evaluating Team Responses</h4>
 
                     <p class="text-secondary mt-3">
-                        Please wait while the system evaluates the questionnaire data across all 4 group members using the Becker & Klein classification algorithm.
+                        Please wait while the system evaluates the survey across all team members.
                     </p>
 
                     <!-- Status Banner -->
-                    <div class="alert alert-warning border-warning small text-muted px-4 py-2 mt-3" id="status-banner">
+                    <div class="alert alert-warning border-warning large text-muted px-4 py-2 mt-3" id="status-banner">
                         <i class="fas fa-spinner fa-spin mr-2" id="banner-icon"></i>
-                        <span id="banner-text">System calculating team influence profiles. Thank you for your patience.</span>
+                        <span id="banner-text">System calculating members responses. Thank you for your patience.</span>
                     </div>
 
                     <!-- Submit Button (Starts Disabled) -->
                     <div class="text-center mt-4">
                         <button type="submit" id="btn-view-result" class="btn btn-primary btn-lg px-5 font-weight-bold shadow-sm" disabled>
-                            View Assignment Result <i class="fas fa-arrow-right ml-2"></i>
+                            View Assignment Results<i class="fas fa-arrow-right ml-2"></i>
                         </button>
                     </div>
                 </div>
@@ -365,13 +356,13 @@
                             const bannerText = document.getElementById('banner-text');
 
                             if (banner) {
-                                banner.className = "alert alert-success border-success text-success small px-4 py-2 mt-3 font-weight-bold";
+                                banner.className = "alert alert-success border-success text-success large px-4 py-2 mt-3 font-weight-bold";
                             }
                             if (bannerIcon) {
                                 bannerIcon.className = "fas fa-check-circle mr-2";
                             }
                             if (bannerText) {
-                                bannerText.innerText = "Team influence profiles successfully calculated!";
+                                bannerText.innerText = "Roles allocation completed!";
                             }
 
                             // 4. Enable the Submit Button
@@ -385,25 +376,18 @@
 
 
                 <!-- ========================================== -->
-                <!-- SCREEN 6: SELECTION RESULT & TASK BRIEF -->
+                <!-- SCREEN 6: SELECTION RESULT & MANIPULATION CHECKS -->
                 <!-- ========================================== -->
                 {% if step == 6 %}
                 <div>
-                    <div class="alert alert-success border-success text-center mb-4 shadow-sm py-2">
-                        <span class="font-weight-bold small"><i class="fas fa-check-circle mr-1"></i> Becker & Klein Leadership Classification Complete</span>
-                    </div>
 
                     <h4 class="font-weight-bold text-dark mb-3 text-center">Your Assigned Role: <strong>Operations Manager</strong></h4>
-
-                    <p class="text-secondary text-center mb-4">
-                        Based on the Becker & Klein algorithm analysis of your questionnaire responses, <strong>you have been chosen to act as the Operations Manager for Group #104</strong>.
-                    </p>
 
                     <!-- TEAM HIERARCHY CHART -->
                     <div class="card border shadow-sm mb-4">
                         <div class="card-header bg-light py-2 text-center">
                             <h6 class="font-weight-bold text-dark mb-0">
-                                <i class="fas fa-sitemap text-primary mr-2"></i>Group #104 Organizational Hierarchy
+                                <i class="fas fa-sitemap text-primary mr-2"></i>Team Hierarchy
                             </h6>
                         </div>
                         <div class="card-body p-4 bg-white">
@@ -411,7 +395,7 @@
                             <!-- LEVEL 1: MANAGER (YOU / Participant 102) -->
                             <div class="d-flex justify-content-center">
                                 <div class="p-2 px-3 border border-primary rounded text-center bg-primary text-white shadow-sm" style="min-width: 200px;">
-                                    <div class="small font-weight-bold text-uppercase opacity-75">Operations Manager</div>
+                                    <div class="large font-weight-bold text-uppercase opacity-75">Operations Manager</div>
                                     <div class="font-weight-bold fs-6"><i class="fas fa-user-shield mr-1"></i> Participant 102 (You)</div>
                                 </div>
                             </div>
@@ -438,24 +422,24 @@
                                 <!-- Subordinate 101 -->
                                 <div class="col-4 col-md-3 px-1">
                                     <div class="p-2 border rounded bg-light text-muted">
-                                        <div class="extra-small font-weight-bold text-uppercase" style="font-size: 0.65rem;">Subordinate</div>
-                                        <div class="small font-weight-bold text-dark"><i class="fas fa-user mr-1"></i> Participant 101</div>
+                                        <div class="extra-large font-weight-bold text-uppercase" style="font-size: 0.65rem;">Subordinate</div>
+                                        <div class="large font-weight-bold text-dark"><i class="fas fa-user mr-1"></i> Participant 101</div>
                                     </div>
                                 </div>
 
                                 <!-- Subordinate 103 (Highlighted Advisor) -->
                                <div class="col-4 col-md-3 px-1">
                                     <div class="p-2 border rounded bg-light text-muted">
-                                        <div class="extra-small font-weight-bold text-uppercase" style="font-size: 0.65rem;">Subordinate</div>
-                                        <div class="small font-weight-bold text-dark"><i class="fas fa-user mr-1"></i> Participant 103</div>
+                                        <div class="extra-large font-weight-bold text-uppercase" style="font-size: 0.65rem;">Subordinate</div>
+                                        <div class="large font-weight-bold text-dark"><i class="fas fa-user mr-1"></i> Participant 103</div>
                                     </div>
                                 </div>
 
                                 <!-- Subordinate 104 -->
                                 <div class="col-4 col-md-3 px-1">
                                     <div class="p-2 border rounded bg-light text-muted">
-                                        <div class="extra-small font-weight-bold text-uppercase" style="font-size: 0.65rem;">Subordinate</div>
-                                        <div class="small font-weight-bold text-dark"><i class="fas fa-user mr-1"></i> Participant 104</div>
+                                        <div class="extra-large font-weight-bold text-uppercase" style="font-size: 0.65rem;">Subordinate</div>
+                                        <div class="large font-weight-bold text-dark"><i class="fas fa-user mr-1"></i> Participant 104</div>
                                     </div>
                                 </div>
 
@@ -466,37 +450,37 @@
                     {% if condition == 'dominance' %}
                     <!-- DOMINANCE MANIPULATION -->
                     <div class="p-4 rounded mb-4" style="background-color: #f8f9fa; border-left: 5px solid #6c757d;">
-                        <h6 class="font-weight-bold text-primary mb-2"><i class="fas fa-user-shield mr-2"></i> Leadership Profile Feedback</h6>
+                        <h6 class="font-weight-bold text-primary mb-2"><i class="fas fa-user-shield mr-2"></i> Important! Please read carefully</h6>
                         <p class="text-dark mb-3" style="line-height: 1.6; font-size: 1.05rem;">
-                            Based on the Becker & Klein questionnaire results, you have been chosen to act in the upcoming simulation - as the <strong>Operations Manager</strong> for your group, <strong>you are expected to lead with a dominant and assertive style</strong>.
-                            Specifically, in interactions with members within the group, you are <strong>controlling</strong> and are seen as a manager who is <strong>forceful</strong> in your behavior towards others. You remain an asset to the company. You remain an asset to the company.
+                            <strong>You are expected to lead with a dominant and assertive style</strong>.
+                            Specifically, in interactions with members within the team, you are <strong>controlling</strong> and are seen as a manager who is <strong>forceful</strong> in your behavior towards others. You remain an asset to the team.
                         </p>
                         <p class="text-primary font-weight-bold mb-0" style="font-size: 1rem;">
-                            Please make sure you embody and follow this management style throughout the upcoming task.
+                            Please make sure you embody and follow this management style throughout the simulation.
                         </p>
                     </div>
 
                     {% elif condition == 'prestige' %}
                     <!-- PRESTIGE MANIPULATION -->
                     <div class="p-4 rounded mb-4" style="background-color: #f8f9fa; border-left: 5px solid #6c757d;">
-                        <h6 class="font-weight-bold text-primary mb-2"><i class="fas fa-award mr-2"></i> Leadership Profile Feedback</h6>
+                        <h6 class="font-weight-bold text-primary mb-2"><i class="fas fa-award mr-2"></i> Important! Please read carefully</h6>
                         <p class="text-dark mb-3" style="line-height: 1.6; font-size: 1.05rem;">
-                            Based on the Becker & Klein questionnaire results, you have been chosen to act in the upcoming simulation - as the <strong>Operations Manager</strong> for your group, <strong>you are expected to lead with a respect and admiration style.</strong>
-                            Specifically, in interactions with members within the group, you share your <strong>knowledge</strong>, <strong>expertise</strong>, and <strong>skills</strong>, and are seen as a manager who is granted <strong>high esteem</strong> from others. You remain an asset to the company.
+                            Based on the Becker & Klein questionnaire results, you have been chosen to act in the upcoming simulation - as the <strong>Operations Manager</strong> for your team, <strong>you are expected to lead with a respect and admiration style.</strong>
+                            Specifically, in interactions with members within the team, you share your <strong>knowledge</strong>, <strong>expertise</strong>, and <strong>skills</strong>, and are seen as a manager who is granted <strong>high esteem</strong> from others. You remain an asset to the team.
                         </p>
                         <p class="text-primary font-weight-bold mb-0" style="font-size: 1rem;">
-                            Please make sure you embody and follow this management style throughout the upcoming task.
+                            Please make sure you embody and follow this management style throughout the simulation.
                         </p>
                     </div>
 
                     {% else %}
                     <!-- CONTROL CONDITION -->
                     <div class="p-4 rounded mb-4" style="background-color: #f8f9fa; border-left: 5px solid #6c757d;">
-                        <h6 class="font-weight-bold text-secondary mb-2"><i class="fas fa-user-check mr-2"></i> Leadership Profile Feedback</h6>
-                        <p class="text-dark small mb-2" style="line-height: 1.6;">
-                            Based on the Becker & Klein questionnaire results, you have been chosen to act as the Operations Manager for your group. Your results indicate that you have strong managerial potential. You have ambitions to continue growing in the company. You remain an asset to the company.
+                        <h6 class="font-weight-bold text-secondary mb-2"><i class="fas fa-user-check mr-2"></i> Important! Please read carefully</h6>
+                        <p class="text-dark large mb-2" style="line-height: 1.6;">
+                            Based on the Becker & Klein questionnaire results, you have been chosen to act as the Operations Manager for your team. Your results indicate that you have strong managerial potential. You have ambitions to continue growing in the company. You remain an asset to the company.
                         </p>
-                        <p class="text-secondary small font-weight-bold mb-0">
+                        <p class="text-secondary large font-weight-bold mb-0">
                             Please make sure you follow your standard management style throughout the upcoming task.
                         </p>
                     </div>
@@ -509,8 +493,8 @@
                         <h6 class="font-weight-bold text-dark mb-2" style="font-size: 0.95rem;">
                             <i class="fas fa-clipboard-list text-primary mr-2"></i>
                         </h6>
-                        <p class="text-secondary small mb-3">
-                            Please indicate the extent to which each statement accurately describes you in the role of Operations Manager who leads with a <strong>{% if condition == 'dominance' %}dominant and assertive{% elif condition == 'prestige' %}respect and admiration{% endif %} style</strong>:
+                        <p class="text-secondary large mb-3">
+                            Please indicate the extent to which each statement accurately describes you in the role of Operations Manager as mentioned above:
                         </p>
 
                         <div class="table-responsive">
@@ -518,19 +502,19 @@
                                 <thead>
                                     <tr class="bg-light">
                                         <th class="statement-head border-0"></th>
-                                        <th>1<br><small class="text-muted">not at all</small></th>
+                                        <th>1<br><large class="text-muted">not at all</large></th>
                                         <th>2</th>
                                         <th>3</th>
-                                        <th>4<br><small class="text-muted">Somewhat</small></th>
+                                        <th>4<br><large class="text-muted">Somewhat</large></th>
                                         <th>5</th>
                                         <th>6</th>
-                                        <th>7<br><small class="text-muted">Very much</small></th>
+                                        <th>7<br><large class="text-muted">Very much</large></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <!-- Item 1 (Prestige) -->
                                     <tr>
-                                        <td class="likert-statement">Members of my group respect and admire me.</td>
+                                        <td class="likert-statement">Members of my team respect and admire me.</td>
                                         {% for i in "1234567" %}
                                         <td><input type="radio" name="mc_item_1" value="{{ i }}" class="likert-radio" required></td>
                                         {% endfor %}
@@ -596,38 +580,48 @@
                         </div>
                     </div>
 
-                    <hr class="my-4">
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg px-5 font-weight-bold shadow-sm">
+                            Continue to Task Overview <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
 
-                    <h5 class="font-weight-bold text-dark mb-2">Upcoming Task Setup</h5>
-                    <p class="text-secondary small mb-3">
-                        As Operations Manager, your primary responsibility is to review and authorize workforce and cargo allocation logs across fast-paced operational rounds:
+
+                <!-- ========================================== -->
+                <!-- SCREEN 7: TASK BRIEF & SIMULATION RULES -->
+                <!-- ========================================== -->
+                {% if step == 7 %}
+                <div>
+                    <h5 class="font-weight-bold text-dark mb-2">Overview of the Simulation</h5>
+                    <p class="text-secondary large mb-3">
+                        The simulation consists of two tasks, in which you serve as the team leader over participants 101, 103, and 104.
                     </p>
 
                     <!-- Task Rules & Constraints Box -->
                     <div class="bg-light p-3 rounded border mb-4">
                         <h6 class="font-weight-bold text-dark mb-2" style="font-size: 0.95rem;">
-                            <i class="fas fa-clipboard-check text-primary mr-2"></i>Task Guidelines & Rules:
+                            <i class="fas fa-clipboard-check text-primary mr-2"></i>Task 1 Guidelines & Rules:
                         </h6>
-                        <ul class="text-secondary small mb-0 pl-3" style="line-height: 1.6;">
+                        <ul class="text-secondary large mb-0 pl-3" style="line-height: 1.6;">
                             <li class="mb-1">
                                 <strong>Resource Allocation:</strong> In each trial, you must distribute container loads across three transit modes: <strong>Air</strong>, <strong>Sea</strong>, and <strong>Rail</strong>.
                             </li>
                             <li class="mb-1">
-                                <strong>Target Constraint:</strong> The total sum across all three transit options must equal <strong>exactly 15 containers</strong> for every allocation log.
+                                <strong>Target Constraint:</strong> The total sum across all three transit options must equal <strong>exactly 15 containers</strong> for every allocation.
                             </li>
                             <li class="mb-1">
-                                <strong>Scoring & Assistance Surcharge:</strong> You will earn <strong>+3 points</strong> for every correct allocation decision. Consulting an advisor (subordinate or AI) incurs a <strong>1-point surcharge (-1 point)</strong> from your score.                            </li>
-                            <li class="mb-1">
-                                <strong>Bonus Lottery:</strong> In addition to your base participation payout, the points you earn during the upcoming task will be converted directly into lottery tickets for a $10 bonus prize. The more tickets you collect, the higher your probability of winning!
+                                <strong>Scoring & Assistance Surcharge:</strong> You will earn <strong>+3 points</strong> for every correct allocation decision. Consulting an advisor (subordinate or AI) incurs a <strong>1-point surcharge (-1 point)</strong> from your score.
                             </li>
                             <li class="mb-1">
-                                <strong>Study Structure:</strong> This is <strong>Task 1 of 2</strong> in today’s study, in which you serve as the team leader over participants 101, 103, and 104. You will begin with an initial <strong>practice block</strong>, followed by <strong>a series of live evaluation blocks</strong>.
+                                <strong>Bonus Lottery:</strong> In addition to your base participation prolific pay, the points you earn during the upcoming task will be converted directly into lottery tickets for a $10 bonus prize. The more tickets you collect, the higher your probability of winning!
                             </li>
                         </ul>
                     </div>
 
-                    <p class="text-secondary small mb-3">
-                        To assist you in the task, you have two decision-support channels available:
+                    <p class="text-secondary large mb-3">
+                        <strong>In each trial, you can seek help from one of these sources:</strong>
                     </p>
 
                     <div class="row">
@@ -640,24 +634,23 @@
                                         <span class="badge text-uppercase" style="background-color: #e0f2fe; color: #0369a1; font-size: 0.7rem; letter-spacing: 0.5px;">
                                             <i class="fas fa-sitemap me-1"></i> Direct Subordinate
                                         </span>
-                                        <span class="badge bg-info text-dark extra-small">Participant 103</span>
-                                        <span class="badge bg-outline-dark text-muted extra-small"></span>
+                                        <span class="badge bg-outline-dark text-muted extra-large"></span>
                                     </div>
 
-                                    <strong class="text-dark d-block mb-1 fs-6">
-                                        <i class="fas fa-user-tie text-warning me-1"></i> Direct Subordinate - Participant 103 (Operations Specialist)
+                                    <strong class="text-dark d-block mb-1 fs-8">
+                                        <i class="fas fa-user-tie text-warning me-1"></i>Participant 103 (Operations Specialist)
                                     </strong>
 
                                     <!-- Specific Domain Expertise -->
-                                    <p class="text-muted extra-small mb-2" style="font-size: 0.82rem; line-height: 1.3;">
-                                        A subordinate report under your direct supervision who <strong>excels specifically at logistical and operational routing mechanics</strong> (rail vs. sea transit balancing).
+                                    <p class="text-muted extra-large mb-2" style="font-size: 1rem; line-height: 1.3;">
+                                        Based on previous simulations this subordinate <strong>excels specifically at resource allocation.</strong>
                                     </p>
                                 </div>
 
                                 <div class="mt-2 pt-2 border-top">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span class="badge bg-primary text-white px-2 py-1 fw-bold" style="font-size: 0.85rem;">
-                                            Historical Accuracy: 85%
+                                            Prior Accuracy: Approximately 85%
                                         </span>
                                     </div>
                                 </div>
@@ -672,22 +665,21 @@
                                         <span class="badge text-uppercase" style="background-color: #e0f2fe; color: #0369a1; font-size: 0.7rem; letter-spacing: 0.5px;">
                                             <i class="fas fa-microchip me-1"></i> Automated Support
                                         </span>
-                                        <span class="badge bg-info text-dark extra-small">Algorithm</span>
                                     </div>
 
-                                    <strong class="text-dark d-block mb-1 fs-6">
-                                        <i class="fas fa-robot text-primary me-1"></i> Automated Routing AI
+                                    <strong class="text-dark d-block mb-1 fs-8">
+                                        <i class="fas fa-robot text-primary me-1"></i> AI
                                     </strong>
 
-                                    <p class="text-muted extra-small mb-2" style="font-size: 0.82rem; line-height: 1.3;">
-                                        An automated decision engine trained to evaluate multi-modal distribution channels and trade-off constraints.
+                                    <p class="text-muted extra-large mb-2" style="font-size: 1rem; line-height: 1.3;">
+                                        Based on previous simulations this AI <strong>excels specifically at resource allocation.</strong>
                                     </p>
                                 </div>
 
                                 <div class="mt-2 pt-2 border-top">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span class="badge bg-primary text-white px-2 py-1 fw-bold" style="font-size: 0.85rem;">
-                                            Historical Accuracy: 85%
+                                            Prior Accuracy: Approximately 85%
                                         </span>
                                     </div>
                                 </div>
@@ -695,15 +687,9 @@
                         </div>
                     </div>
 
-{#                    <!-- Clear Performance Equivalence Note -->#}
-{#                    <div class="alert alert-info mt-3 p-2 text-center mb-0" style="font-size: 0.85rem;">#}
-{#                        <i class="fas fa-info-circle mr-1"></i>#}
-{#                        <strong>Performance Note:</strong> Both the AI Assistant and Participant 103 have been benchmarked and offer <strong>equal decision accuracy (exactly 85%)</strong> across all trials.#}
-{#                    </div>#}
-
                     <div class="text-center mt-4">
                         <button type="submit" class="btn btn-primary btn-lg px-5 font-weight-bold shadow-sm">
-                            Begin Task Workspace <i class="fas fa-play ml-2"></i>
+                            Begin Task 1 <i class="fas fa-play ml-2"></i>
                         </button>
                     </div>
                 </div>
