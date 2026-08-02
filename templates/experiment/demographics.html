@@ -46,5 +46,15 @@
             </form>
         </div>
     </div>
+<script>
+    // 1. Push a new state so there is a history entry to trap
+    history.pushState(null, null, location.href);
+
+    // 2. Intercept any popstate event (triggered when user clicks "Back")
+    window.onpopstate = function () {
+        history.pushState(null, null, location.href);
+        alert("Navigating backwards is disabled during this experiment.");
+    };
+</script>
 </body>
 </html>

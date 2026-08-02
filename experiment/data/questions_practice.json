@@ -2,13 +2,13 @@
   {
     "id": 1,
     "title": "Logistics Routing Log #1",
-    "difficulty": "E",
+    "difficulty": "M",
     "correct_answer": "Ocean",
     "constraints": {
       "target_units": 15,
       "rules": {
-        "air_rule": "Must equal exactly 4 containers.",
-        "sea_rule": "Must equal exactly 6 containers.",
+        "air_rule": "Must carry 1 container less than Rail.",
+        "sea_rule": "Must equal remaining cargo needed to reach 15.",
         "rail_rule": "Must equal exactly 5 containers."
       },
       "evaluated_values": {
@@ -29,103 +29,51 @@
     "id": 2,
     "title": "Logistics Routing Log #2",
     "difficulty": "M",
-    "correct_answer": "Air",
+    "correct_answer": "Ocean",
     "constraints": {
       "target_units": 15,
       "rules": {
-        "air_rule": "Must equal 2 times the Ocean capacity.",
-        "sea_rule": "Must equal exactly 4 containers.",
+        "air_rule": "Must carry 5 containers less than Ocean.",
+        "sea_rule": "Must equal exactly 7 containers.",
         "rail_rule": "Must equal remaining cargo needed to reach 15."
       },
       "evaluated_values": {
-        "air": 8,
-        "ocean": 4,
-        "rail": 3
+        "air": 2,
+        "ocean": 7,
+        "rail": 6
       }
     },
     "advisor_recommendation": {
       "cargo_values": {
-        "air": 8,
-        "ocean": 4,
-        "rail": 3
+        "air": 2,
+        "ocean": 7,
+        "rail": 6
       }
     }
   },
   {
     "id": 3,
     "title": "Logistics Routing Log #3",
-    "difficulty": "H",
-    "correct_answer": "Ocean",
+    "difficulty": "M",
+    "correct_answer": "Air",
     "constraints": {
       "target_units": 15,
       "rules": {
-        "air_rule": "Must equal remaining capacity after other routes are filled.",
-        "sea_rule": "Must equal 2.33 times the Rail capacity.",
-        "rail_rule": "Must carry 4 containers less than Ocean."
+        "air_rule": "Must equal exactly 7 containers.",
+        "sea_rule": "Must carry 2 containers less than Air.",
+        "rail_rule": "Must equal remaining cargo needed to reach 15."
       },
       "evaluated_values": {
-        "air": 5,
-        "ocean": 7,
+        "air": 7,
+        "ocean": 5,
         "rail": 3
       }
     },
     "advisor_recommendation": {
       "cargo_values": {
-        "air": 5,
-        "ocean": 7,
+        "air": 7,
+        "ocean": 5,
         "rail": 3
-      }
-    }
-  },
-  {
-    "id": 4,
-    "title": "Logistics Routing Log #4",
-    "difficulty": "H",
-    "correct_answer": "Rail",
-    "constraints": {
-      "target_units": 15,
-      "rules": {
-        "air_rule": "Must equal 0.67 times the Rail capacity.",
-        "sea_rule": "Must equal remaining capacity after other routes are filled.",
-        "rail_rule": "Must carry 2 containers more than Air."
-      },
-      "evaluated_values": {
-        "air": 4,
-        "ocean": 5,
-        "rail": 6
-      }
-    },
-    "advisor_recommendation": {
-      "cargo_values": {
-        "air": 4,
-        "ocean": 5,
-        "rail": 6
-      }
-    }
-  },
-  {
-    "id": 5,
-    "title": "Logistics Routing Log #5",
-    "difficulty": "E",
-    "correct_answer": "Rail",
-    "constraints": {
-      "target_units": 15,
-      "rules": {
-        "air_rule": "Must equal exactly 6 containers.",
-        "sea_rule": "Must equal exactly 2 containers.",
-        "rail_rule": "Must equal exactly 7 containers."
-      },
-      "evaluated_values": {
-        "air": 6,
-        "ocean": 2,
-        "rail": 7
-      }
-    },
-    "advisor_recommendation": {
-      "cargo_values": {
-        "air": 6,
-        "ocean": 2,
-        "rail": 7
       }
     }
   }

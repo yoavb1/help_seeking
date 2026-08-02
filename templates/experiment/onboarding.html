@@ -203,10 +203,10 @@
                 <!-- ========================================== -->
                 {% if step == 3 %}
                 <div>
-                    <h4 class="font-weight-bold text-dark mb-3">Team Setup & Simulation Overview</h4>
+                    <h4 class="font-weight-bold text-dark mb-3">Team Setup</h4>
 
                     <p class="text-secondary">Welcome to the team decision-making phase of the study.</p>
-                    <p class="text-secondary">You have been successfully matched into a <strong>4-person workspace team</strong>.</p>
+                    <p class="text-secondary">You have been successfully matched into a <strong>4-person team</strong>.</p>
 
                     <div class="p-3 my-4 bg-light border border-info rounded text-center">
                         <span class="text-muted font-weight-bold">Assigned Identification:</span> <strong class="text-dark">Participant 102</strong>
@@ -465,7 +465,7 @@
                     <div class="p-4 rounded mb-4" style="background-color: #f8f9fa; border-left: 5px solid #6c757d;">
                         <h6 class="font-weight-bold text-primary mb-2"><i class="fas fa-award mr-2"></i> Important! Please read carefully</h6>
                         <p class="text-dark mb-3" style="line-height: 1.6; font-size: 1.05rem;">
-                            Based on the Becker & Klein questionnaire results, you have been chosen to act in the upcoming simulation - as the <strong>Operations Manager</strong> for your team, <strong>you are expected to lead with a respect and admiration style.</strong>
+                            <strong>You are expected to lead with a respect and admiration style.</strong>
                             Specifically, in interactions with members within the team, you share your <strong>knowledge</strong>, <strong>expertise</strong>, and <strong>skills</strong>, and are seen as a manager who is granted <strong>high esteem</strong> from others. You remain an asset to the team.
                         </p>
                         <p class="text-primary font-weight-bold mb-0" style="font-size: 1rem;">
@@ -698,6 +698,15 @@
             </form>
         </div>
     </div>
+<script>
+// 1. Push a new state so there is a history entry to trap
+history.pushState(null, null, location.href);
 
+// 2. Intercept any popstate event (triggered when user clicks "Back")
+window.onpopstate = function () {
+    history.pushState(null, null, location.href);
+    alert("Navigating backwards is disabled during this experiment.");
+};
+</script>
 </body>
 </html>

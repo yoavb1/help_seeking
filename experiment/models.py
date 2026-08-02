@@ -47,6 +47,8 @@ class ChoiceExperimentSession(models.Model):
 class ParticipantTrial(models.Model):
     session = models.ForeignKey(ChoiceExperimentSession, on_delete=models.CASCADE, related_name='trials')
     trial_number = models.IntegerField()
+    trial_id = models.CharField(max_length=100, null=True, blank=True)
+    is_practice = models.BooleanField(default=False)
 
     # Updated choices supporting Easy, Medium, and Hard
     DIFFICULTY_CHOICES = [

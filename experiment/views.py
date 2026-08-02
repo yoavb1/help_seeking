@@ -14,13 +14,17 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
 from .models import *
-
+from django.views.decorators.cache import never_cache
+import traceback
 # 💡 Set your Prolific Completion Code here:
 PROLIFIC_COMPLETION_CODE = "C1234XYZ"
 
 
 def load_and_shuffle_questions(count, filename='questions.json', difficulty=None):
-    """Utility to load questions from JSON, map difficulty codes (E/M/H), and shuffle."""
+    """
+    Utility to load questions from JSON, separate by difficulty (M then H),
+    shuffle each difficulty group independently, and reassign sequence numbers.
+    """
     json_path = os.path.join(
         settings.BASE_DIR, 'experiment', 'data', filename
     )
@@ -31,33 +35,47 @@ def load_and_shuffle_questions(count, filename='questions.json', difficulty=None
     with open(json_path, 'r', encoding='utf-8') as f:
         all_questions = json.load(f)
 
-    # Normalize requested difficulty filter to JSON single-letter code
+    # If a specific single difficulty filter was requested, maintain existing behavior
     if difficulty:
         diff_map = {'easy': 'E', 'medium': 'M', 'hard': 'H', 'E': 'E', 'M': 'M', 'H': 'H'}
         target_diff = diff_map.get(str(difficulty).lower(), str(difficulty).upper())
-        all_questions = [
+        filtered_questions = [
             q for q in all_questions if q.get('difficulty') == target_diff
         ]
+        if not filtered_questions:
+            return []
 
-    if not all_questions:
+        random.shuffle(filtered_questions)
+        ordered_pool = filtered_questions
+
+    else:
+        # Separate questions into Medium and Hard pools
+        medium_questions = [q for q in all_questions if q.get('difficulty') == 'M']
+        hard_questions = [q for q in all_questions if q.get('difficulty') == 'H']
+        other_questions = [q for q in all_questions if q.get('difficulty') not in ['M', 'H']]
+
+        # Shuffle each difficulty group independently
+        random.shuffle(medium_questions)
+        random.shuffle(hard_questions)
+        random.shuffle(other_questions)
+
+        # Combine so ALL Medium come first, then ALL Hard, followed by any others
+        ordered_pool = medium_questions + hard_questions + other_questions
+
+    if not ordered_pool:
         return []
 
-    random.shuffle(all_questions)
-
+    # Select requested count and assign sequential trial numbers 1..N
     selected_questions = []
     for i in range(count):
-        q = dict(all_questions[i % len(all_questions)])
+        q = dict(ordered_pool[i % len(ordered_pool)])
         q['number'] = i + 1  # Assign trial number 1..N
         selected_questions.append(q)
 
     return selected_questions
 
 
-from django.shortcuts import render, redirect
-import random
-from .models import ChoiceExperimentSession
-
-
+@never_cache
 def onboarding_view(request):
     """Handles initial participant entry, Prolific ID capture, and onboarding."""
 
@@ -152,6 +170,8 @@ def onboarding_view(request):
         {'step': step, 'condition': experiment_session.condition},
     )
 
+
+@never_cache
 def practice_run_view(request):
     """Loads the dashboard layout configured as an unlogged practice run with dynamic questions."""
     session_id = request.session.get('experiment_sid')
@@ -174,13 +194,16 @@ def practice_run_view(request):
     return render(request, 'experiment/dashboard.html', context)
 
 
+@never_cache
 def ready_alert_view(request):
     """Intermediate warning screen confirming that practice is over."""
+    return redirect('experiment:dashboard')
     if request.method == "POST":
         return redirect('experiment:dashboard')
     return render(request, 'experiment/ready_alert.html')
 
 
+@never_cache
 def dashboard_view(request):
     """Loads the dashboard layout configured as the live experiment with dynamic questions."""
     session_id = request.session.get('experiment_sid')
@@ -228,16 +251,23 @@ def submit_trial(request):
 
             is_correct = t.get("is_correct", False)
             help_choice = t.get("help_chosen", "none")
+            is_practice = t.get("is_practice", False)
+            trial_num = t.get("trial_number")
+            trial_id = t.get("trial_id")
 
             # 1. Save THIS trial immediately to the DB
-            ParticipantTrial.objects.create(
+            trial, created = ParticipantTrial.objects.update_or_create(
                 session=session,
-                trial_number=t.get("trial_number"),
-                difficulty=diff_code,
-                help_chosen=help_choice,
-                reaction_time=t.get("reaction_time", 0.0),
-                is_correct=is_correct,
-                running_score=t.get("running_score", 0),
+                trial_number=trial_num,
+                is_practice=is_practice,  # Differentiates Practice #1 from Live #1
+                defaults={
+                    "trial_id": trial_id,
+                    "difficulty": diff_code,
+                    "help_chosen": help_choice,
+                    "reaction_time": t.get("reaction_time", 0.0),
+                    "is_correct": is_correct,
+                    "running_score": t.get("running_score", 0),
+                }
             )
 
             # Award +3 for correct answer
@@ -259,6 +289,7 @@ def submit_trial(request):
             return JsonResponse({"status": "success", "message": "Trial logged"})
 
         except Exception as e:
+            traceback.print_exc()
             return JsonResponse(
                 {"status": "error", "message": str(e)}, status=400
             )
@@ -350,6 +381,7 @@ def submit_task(request):
     return redirect('experiment:dashboard')
 
 
+@never_cache
 def survey_view(request):
     """Handles capturing evaluation metrics and creating a SurveyResponse record."""
     session_id = request.session.get('experiment_sid')
@@ -404,52 +436,7 @@ def survey_view(request):
     return render(request, 'experiment/survey.html')
 
 
-def workspace_survey(request):
-    if request.method == 'POST':
-        # Extract data from the request POST dictionary
-        response = SurveyResponse(
-            # Section 1
-            nervous_seeking=request.POST.get('nervous_seeking'),
-            task_anxiety=request.POST.get('task_anxiety'),
-            task_difficulty=request.POST.get('task_difficulty'),
-
-            # Section 2
-            status_reduction=request.POST.get('status_reduction'),
-            incompetent=request.POST.get('incompetent'),
-            inexperienced=request.POST.get('inexperienced'),
-            lesser=request.POST.get('lesser'),
-            org_status_hurt=request.POST.get('org_status_hurt'),
-            held_against=request.POST.get('held_against'),
-
-            # Section 3
-            subordinate_rejection_concern=request.POST.get('subordinate_rejection_concern'),
-            subordinate_compliance_expectation=request.POST.get('subordinate_compliance_expectation'),
-
-            # Section 4
-            relational_strengthen=request.POST.get('relational_strengthen'),
-            relational_trust=request.POST.get('relational_trust'),
-            relational_collaboration=request.POST.get('relational_collaboration'),
-            relational_value_subordinate=request.POST.get('relational_value_subordinate'),
-
-            # Section 5
-            instrumental_human=request.POST.get('instrumental_human'),
-            instrumental_ai=request.POST.get('instrumental_ai'),
-            perceived_competence_human=request.POST.get('perceived_competence_human'),
-            perceived_competence_ai=request.POST.get('perceived_competence_ai')
-        )
-
-        # Save to database
-        response.save()
-
-        # Save primary key to session if you need to access it in the next view (e.g., Demographics)
-        request.session['survey_response_id'] = response.id
-
-        # Redirect to your demographics page
-        return redirect('task_update_notice')
-
-    return render(request, 'survey.html')
-
-
+@never_cache
 def task_update_notice(request):
     """
     Dedicated transition screen informing participants
@@ -459,6 +446,7 @@ def task_update_notice(request):
     return render(request, 'experiment/task_update.html')
 
 
+@never_cache
 def demographics_view(request):
     """Handles capturing age and gender diagnostics."""
     session_id = request.session.get('experiment_sid')
@@ -479,6 +467,7 @@ def demographics_view(request):
     return render(request, 'experiment/demographics.html')
 
 
+@never_cache
 def thank_you_view(request):
     """Final study debrief screen providing the Prolific completion link."""
     session_id = request.session.get('experiment_sid')
@@ -580,6 +569,8 @@ def download_trials_csv(request):
 
         # Trial Details
         "Trial Number",
+        "Trial ID",
+        "Is Practice",
         "Difficulty",
         "Help Chosen",
         "Reaction Time (s)",
@@ -628,7 +619,6 @@ def download_trials_csv(request):
 
     for t in trials:
         s = t.session
-        # Fetch matching survey response if linked via session or user
         survey = getattr(s, 'survey_response', None) if s else None
 
         writer.writerow([
@@ -645,6 +635,8 @@ def download_trials_csv(request):
 
             # Trial Details
             t.trial_number,
+            getattr(t, "trial_id", "N/A") or "N/A", # 👈 ADDED HERE
+            t.is_practice,                         # 👈 ADDED HERE
             t.difficulty,
             t.help_chosen,
             t.reaction_time,

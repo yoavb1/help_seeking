@@ -148,7 +148,7 @@
                                 class="btn btn-consult-grey btn-consult-grey-ai font-weight-bold shadow-sm flex-fill"
                                 id="btn-help-ai"
                                 style="padding: 14px 20px; font-size: 1.1rem; max-width: 400px; min-width: 250px;">
-                            <i class="fas fa-robot mr-2"></i> Consult AI (~85%)
+                            <i class="fas fa-robot mr-2"></i> Consult AI (~85% accuracy)
                         </button>
 
                         <!-- Subordinate Button -->
@@ -156,7 +156,7 @@
                                 class="btn btn-consult-grey btn-consult-grey-human font-weight-bold shadow-sm flex-fill"
                                 id="btn-help-human"
                                 style="padding: 14px 20px; font-size: 1.1rem; max-width: 400px; min-width: 250px;">
-                            <i class="fas fa-user-tie mr-2"></i> Consult subordinate (~85%)
+                            <i class="fas fa-user-tie mr-2"></i> Consult subordinate (~85% accuracy)
                         </button>
 
                     {% else %}
@@ -166,7 +166,7 @@
                                 class="btn btn-consult-grey btn-consult-grey-human font-weight-bold shadow-sm flex-fill"
                                 id="btn-help-human"
                                 style="padding: 14px 20px; font-size: 1.1rem; max-width: 400px; min-width: 250px;">
-                            <i class="fas fa-user-tie mr-2"></i> Consult subordinate (~85%)
+                            <i class="fas fa-user-tie mr-2"></i> Consult subordinate (~85% accuracy)
                         </button>
 
                         <!-- AI Button -->
@@ -174,7 +174,7 @@
                                 class="btn btn-consult-grey btn-consult-grey-ai font-weight-bold shadow-sm flex-fill"
                                 id="btn-help-ai"
                                 style="padding: 14px 20px; font-size: 1.1rem; max-width: 400px; min-width: 250px;">
-                            <i class="fas fa-robot mr-2"></i> Consult AI (~85%)
+                            <i class="fas fa-robot mr-2"></i> Consult AI (~85% accuracy)
                         </button>
 
                     {% endif %}
@@ -250,7 +250,8 @@ function parseQuestion(qData, index) {
     const advRec = (qData.advisor_recommendation && qData.advisor_recommendation.cargo_values) || {};
 
     return {
-        number: qData.id || qData.number || (index + 1),
+        id: qData.id !== undefined ? qData.id : (index + 1),
+        number: qData.number || (index + 1),
         difficulty: qData.difficulty || 'E',
         target: constraints.target_units !== undefined ? constraints.target_units : (qData.target || 15),
 
@@ -265,8 +266,6 @@ function parseQuestion(qData, index) {
         adv_air: advRec.air !== undefined ? advRec.air : (evalVals.air !== undefined ? evalVals.air : 5),
         adv_sea: advRec.ocean !== undefined ? advRec.ocean : (evalVals.ocean !== undefined ? evalVals.ocean : 5),
         adv_rail: advRec.rail !== undefined ? advRec.rail : (evalVals.rail !== undefined ? evalVals.rail : 5),
-
-        advisor_role: qData.advisor_role || 'peer'
     };
 }
 
@@ -283,7 +282,6 @@ if (backendQuestions && backendQuestions.length > 0) {
             rail_rule: "Must equal exactly 5.",
             sol_air: 5, sol_sea: 5, sol_rail: 5,
             adv_air: 5, adv_sea: 5, adv_rail: 5,
-            advisor_role: 'peer'
         });
     }
 }
@@ -302,7 +300,7 @@ window.onload = function() {
     if (isPracticeMode) {
         showInterstitial(
             "Task 1 - Practice",
-            `To get familiar with the task, you will first complete 2 unlimited time trials.</p>`,
+            `To get familiar with the task, you will first complete 3 unlimited time trials.</p>`,
             `Begin Practice`,
             false
         );
@@ -383,8 +381,8 @@ function startTrial() {
         document.getElementById('trial-counter').innerText = `${currentTrialIndex + 1} / ${dataset.length}`;
         document.getElementById('timer-display').innerText = "No time limit";
     } else {
-        document.getElementById('mode-alert-strip').className = "text-center py-2 bg-danger text-white text-uppercase large font-weight-bold shadow-sm";
-        document.getElementById('mode-alert-strip').innerText = "🚨 Live Evaluation Active!";
+        document.getElementById('mode-alert-strip').className = "text-center py-2 practice-banner text-uppercase large shadow-sm";
+        document.getElementById('mode-alert-strip').innerText = "Live Evaluation Active!";
         document.getElementById('progress-label').innerText = "Live Run";
         document.getElementById('trial-counter').innerText = `${currentTrialIndex + 1} / ${dataset.length}`;
     }
@@ -463,7 +461,7 @@ function triggerAdvisor(type) {
     selectedHelpThisTrial = type;
 
     let currentTrial = dataset[currentTrialIndex];
-    currentAdvisorRole = type === 'human' ? (currentTrial.advisor_role || 'peer') : 'ai';
+    currentAdvisorRole = type === 'human' ? 'human' : (type === 'ai' ? 'ai' : 'none');
 
     document.getElementById('input-air').value = currentTrial.adv_air;
     document.getElementById('input-sea').value = currentTrial.adv_sea;
@@ -481,6 +479,7 @@ document.getElementById('btn-submit-allocation').addEventListener('click', () =>
 
 function processSubmission(timeout) {
     let currentTrial = dataset[currentTrialIndex];
+
     let endTime = performance.now();
     let duration = (endTime - trialStartTime) / 1000;
 
@@ -538,21 +537,22 @@ function processSubmission(timeout) {
     document.getElementById('live-score-display').innerText = `${rollingScore} PTS`;
     document.getElementById('modalScoreDisplay').innerText = `${rollingScore} PTS`;
 
-    if (!isPracticeMode) {
-        const trialPayload = {
-            trial_number: currentTrialIndex + 3,
-            difficulty: currentTrial.difficulty,
-            help_chosen: selectedHelpThisTrial,
-            advisor_role: currentAdvisorRole,
-            reaction_time: parseFloat(duration.toFixed(3)),
-            is_correct: isCorrect,
-            running_score: rollingScore
-        };
+    // 5. Build payload & send to server
+    const trialPayload = {
+        trial_number: currentTrialIndex + 1,
+        trial_id: String(currentTrial.id),
+        difficulty: currentTrial.difficulty,
+        help_chosen: selectedHelpThisTrial,
+        reaction_time: parseFloat(duration.toFixed(3)),
+        is_correct: isCorrect,
+        running_score: rollingScore,
+        is_practice: isPracticeMode // Dynamically sets true or false
+    };
 
-        choiceLogs.push(trialPayload);
-        saveCurrentTrial(trialPayload);
-    }
+    choiceLogs.push(trialPayload);
+    saveCurrentTrial(trialPayload); // Save immediately to Django!
 
+    // 6. Increment trial counter and display modal
     currentTrialIndex++;
     $('#trialFeedbackModal').modal('show');
 }
@@ -563,19 +563,40 @@ document.getElementById('btn-modal-next').addEventListener('click', () => {
 });
 
 function transmitFinalPayload() {
+// 1. Prevent double-submission on fast clicking or enter keys
+    if (window.isSubmitting) return;
+    window.isSubmitting = true;
+
+    // Optional: Disable submit button visually if you have one
+    const submitBtn = document.getElementById("submit-btn");
+    if (submitBtn) submitBtn.disabled = true;
+
+    // 2. Send empty object (or summary metadata only) — NOT choiceLogs!
     fetch("{% url 'experiment:submit_task' %}", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
-        body: JSON.stringify({ trials: choiceLogs })
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({}) // ✅ DO NOT send choiceLogs array!
     })
     .then(res => {
-        if (!res.ok) return res.json().then(err => { throw new Error(err.message); });
+        if (!res.ok) return res.json().then(err => { throw new Error(err.message || "Server error"); });
         return res.json();
     })
     .then(data => {
-        if (data.redirect_url) window.location.href = data.redirect_url;
+        if (data.redirect_url) {
+            window.location.href = data.redirect_url;
+        } else {
+            console.error("No redirect URL returned");
+        }
     })
-    .catch(error => console.error("Submission Error:", error));
+    .catch(error => {
+        console.error("Submission Error:", error);
+        alert("There was an issue saving your final response. Please try again.");
+        window.isSubmitting = false;
+        if (submitBtn) submitBtn.disabled = false;
+    });
 }
 
 function saveCurrentTrial(trialData) {
@@ -590,12 +611,13 @@ function saveCurrentTrial(trialData) {
         keepalive: true,
         body: JSON.stringify({
             trial_number: trialData.trial_number,
+            trial_id: trialData.trial_id,
             difficulty: trialData.difficulty,
             help_chosen: trialData.help_chosen,
-            advisor_role: trialData.advisor_role,
             reaction_time: trialData.reaction_time,
             is_correct: trialData.is_correct,
-            running_score: trialData.running_score
+            running_score: trialData.running_score,
+            is_practice: trialData.is_practice || false
         })
     })
     .then(res => res.json())
@@ -617,6 +639,14 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+// 1. Push a new state so there is a history entry to trap
+history.pushState(null, null, location.href);
+
+// 2. Intercept any popstate event (triggered when user clicks "Back")
+window.onpopstate = function () {
+    history.pushState(null, null, location.href);
+    alert("Navigating backwards is disabled during this experiment.");
+};
 </script>
 </body>
 </html>

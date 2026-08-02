@@ -19,8 +19,8 @@ try:
 
     from django.conf import settings
 
-    PRACTICE_COUNT = getattr(settings, "EXPERIMENT_PRACTICE_TRIALS", 5)
-    LIVE_COUNT = getattr(settings, "EXPERIMENT_LIVE_TRIALS", 80)
+    PRACTICE_COUNT = getattr(settings, "EXPERIMENT_PRACTICE_TRIALS", 3)
+    LIVE_COUNT = getattr(settings, "EXPERIMENT_LIVE_TRIALS", 10)
     print(
         f"Loaded settings from Django: PRACTICE={PRACTICE_COUNT}, LIVE={LIVE_COUNT}"
     )
@@ -42,8 +42,6 @@ def generate_easy_rules(correct_route):
         air = random.randint(2, 8)
         ocean = random.randint(2, 7)
         rail = TARGET_UNITS - (air + ocean)
-        if rail < 0:
-            print('rail is lower than 0')
 
         if rail > 1 and len({air, ocean, rail}) == 3:
             vals = {"Air": air, "Ocean": ocean, "Rail": rail}
@@ -70,10 +68,10 @@ def generate_easy_rules(correct_route):
 
 def generate_moderate_rules(correct_route):
     """
-    MODERATE RULES:
+    MODERATE RULES (Slightly Harder):
     - 1 Explicit Integer
-    - 1 Multiplier or Offset
-    - 1 Remaining Cargo rule (Randomly assigned to Air, Ocean, or Rail)
+    - 1 Relational rule with a difference/offset or exact integer multiplier
+    - 1 Remaining Cargo rule to sum up to TARGET_UNITS
     """
     for _ in range(1000):
         air = random.randint(2, 8)
@@ -95,13 +93,13 @@ def generate_moderate_rules(correct_route):
                 explicit_text = f"Must equal exactly {explicit_val} containers."
 
                 rel_val = mode_values[relational_mode]
-                exp_val = mode_values[explicit_mode]
 
-                if rel_val % exp_val == 0 and rel_val > exp_val:
-                    mult = rel_val // exp_val
+                # Force cleaner, moderately challenging relationships
+                if rel_val % explicit_val == 0 and rel_val > explicit_val:
+                    mult = rel_val // explicit_val
                     rel_text = f"Must equal {mult} times the {explicit_mode} capacity."
                 else:
-                    diff = rel_val - exp_val
+                    diff = rel_val - explicit_val
                     if diff > 0:
                         rel_text = f"Must carry {diff} container{'s' if diff > 1 else ''} more than {explicit_mode}."
                     else:
@@ -137,9 +135,9 @@ def generate_moderate_rules(correct_route):
 
 def generate_hard_rules(correct_route):
     """
-    HARD RULES: Pure system of relational equations with NO direct integers.
-    - 1 Remaining cargo rule (Randomly assigned to Air, Ocean, or Rail)
-    - 2 Relational rules connecting modes to one another
+    HARD RULES: Pure system of relational equations with STRICT INTEGER VALUES ONLY.
+    - 1 Remaining cargo rule (summing to 15)
+    - 2 Pure relational rules (using integer multipliers or integer offsets, NO decimals)
     """
     for _ in range(1000):
         air = random.randint(2, 8)
@@ -158,9 +156,18 @@ def generate_hard_rules(correct_route):
 
                 v1, v2 = mode_values[m1], mode_values[m2]
 
-                mult1 = round(v1 / v2, 2)
-                rule1_text = f"Must equal {mult1} times the {m2} capacity."
+                # Rule 1: Integer Multiplier if divisible, otherwise clean integer offset
+                if v1 % v2 == 0 and v1 > v2:
+                    mult1 = v1 // v2
+                    rule1_text = f"Must equal {mult1} times the {m2} capacity."
+                else:
+                    diff1 = v1 - v2
+                    if diff1 > 0:
+                        rule1_text = f"Must carry {diff1} container{'s' if diff1 > 1 else ''} more than {m2}."
+                    else:
+                        rule1_text = f"Must carry {abs(diff1)} container{'s' if abs(diff1) > 1 else ''} less than {m2}."
 
+                # Rule 2: Integer Offset connecting m2 to m1
                 diff2 = v2 - v1
                 if diff2 > 0:
                     rule2_text = f"Must carry {diff2} container{'s' if diff2 > 1 else ''} more than {m1}."
@@ -188,8 +195,8 @@ def generate_hard_rules(correct_route):
     return {
         "rules": {
             "air_rule": "Must equal remaining capacity after other routes are filled.",
-            "sea_rule": "Must equal 0.5 times the Air capacity.",
-            "rail_rule": "Must carry 1 container less than Ocean."
+            "sea_rule": "Must carry 1 container more than Rail.",
+            "rail_rule": "Must carry 5 containers less than Ocean."
         },
         "evaluated_values": {"air": 8, "ocean": 4, "rail": 3}
     }
@@ -291,16 +298,17 @@ def generate_dataset(total_count, output_filename, diff_distribution, target_acc
 
     print(f"\n================ Saved: {filepath} ({total_count} Questions) ================")
     for diff in ["E", "M", "H"]:
-        d_stat = stats[diff]
-        acc_pct = (d_stat['correct'] / d_stat['total'] * 100) if d_stat['total'] > 0 else 0
-        print(
-            f" Difficulty [{diff}]: {d_stat['total']} items | Advisor Correct: {d_stat['correct']}/{d_stat['total']} ({acc_pct:.1f}%)")
+        if diff in stats and stats[diff]['total'] > 0:
+            d_stat = stats[diff]
+            acc_pct = (d_stat['correct'] / d_stat['total'] * 100)
+            print(
+                f" Difficulty [{diff}]: {d_stat['total']} items | Advisor Correct: {d_stat['correct']}/{d_stat['total']} ({acc_pct:.1f}%)")
     print("==========================================================================")
 
 
 if __name__ == "__main__":
     # Practice Set: 5 questions
-    generate_dataset(PRACTICE_COUNT, "questions_practice.json", {"E": 0.33, "M": 0.33, "H": 0.33}, target_accuracy=0.85)
+    generate_dataset(PRACTICE_COUNT, "questions_practice.json", {"E": 0, "M": 1, "H": 0}, target_accuracy=0.85)
 
     # Live Set: 80 questions
-    generate_dataset(LIVE_COUNT, "questions_live.json", {"E": 0.33, "M": 0.33, "H": 0.33}, target_accuracy=0.85)
+    generate_dataset(LIVE_COUNT, "questions_live.json", {"E": 0, "M": 0.5, "H": 0.5}, target_accuracy=0.85)

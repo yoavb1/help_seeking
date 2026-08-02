@@ -151,6 +151,8 @@
                                     <th>Session ID</th>
                                     <th>Prolific PID</th>
                                     <th>Trial #</th>
+                                    <th>Trial ID</th>
+                                    <th>Mode</th>
                                     <th>Difficulty</th>
                                     <th>Help Chosen</th>
                                     <th>Reaction Time (s)</th>
@@ -164,6 +166,14 @@
                                     <td class="font-weight-bold">{{ t.session.session_id|default:"N/A" }}</td>
                                     <td>{{ t.session.prolific_pid|default:"N/A" }}</td>
                                     <td>{{ t.trial_number }}</td>
+                                    <td><code>{{ t.trial_id|default:"N/A" }}</code></td>
+                                    <td>
+                                        {% if t.is_practice %}
+                                            <span class="badge badge-warning">Practice</span>
+                                        {% else %}
+                                            <span class="badge badge-primary">Live</span>
+                                        {% endif %}
+                                    </td>
                                     <td><span class="badge badge-info">{{ t.difficulty }}</span></td>
                                     <td>{{ t.help_chosen }}</td>
                                     <td>{{ t.reaction_time }}s</td>
