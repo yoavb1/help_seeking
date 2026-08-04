@@ -12,15 +12,26 @@
 </head>
 <body>
     <div class="container text-center">
-        <div class="card success-card p-5 max-width mx-auto" style="max-width: 550px;">
+        <div class="card success-card p-5 mx-auto" style="max-width: 550px;">
             <div class="text-success mb-4">
                 <i class="fas fa-check-circle fa-4x"></i>
             </div>
             <h3 class="font-weight-bold text-dark mb-2">Evaluation Complete</h3>
             <hr>
-            <p class="text-muted small font-italic mb-0">Thank you for your cooperation during this operational run. You may now close this window safely.</p>
+            <p class="text-secondary leading-relaxed mb-3">
+                Thank you for your participation! Please click the button below to submit your study on Prolific and receive your reward.
+            </p>
+
+            <!-- PROLIFIC MANUAL BUTTON -->
+            <div class="my-4">
+                <a href="https://app.prolific.com/submissions/complete?cc={{ PROLIFIC_COMPLETION_CODE }}"
+                   class="btn btn-success btn-lg px-4 font-weight-bold shadow-sm">
+                    Complete Study on Prolific <i class="fas fa-external-link-alt ml-2"></i>
+                </a>
+            </div>
         </div>
     </div>
+
 <script>
     // 1. Push a new state so there is a history entry to trap
     history.pushState(null, null, location.href);

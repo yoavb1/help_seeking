@@ -16,9 +16,13 @@ from django.views.decorators.http import require_POST
 from .models import *
 from django.views.decorators.cache import never_cache
 import traceback
-# 💡 Set your Prolific Completion Code here:
-PROLIFIC_COMPLETION_CODE = "C1234XYZ"
+from dotenv import load_dotenv
 
+# Load environment variables from .env file
+load_dotenv()
+
+# Read the completion code from the environment variable
+PROLIFIC_COMPLETION_CODE = os.getenv('PROLIFIC_COMPLETION_CODE')
 
 def load_and_shuffle_questions(count, filename='questions.json', difficulty=None):
     """
@@ -517,7 +521,6 @@ def thank_you_view(request):
         if session_id
         else None
     )
-
     prolific_redirect_url = f"https://app.prolific.com/submissions/complete?cc={PROLIFIC_COMPLETION_CODE}"
 
     if 'experiment_sid' in request.session:
