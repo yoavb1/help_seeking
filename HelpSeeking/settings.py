@@ -9,11 +9,18 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load the .env file located in your project root
+load_dotenv(dotenv_path=BASE_DIR / '.env')
+
+# Grab the secret code
+PROLIFIC_COMPLETION_CODE = os.getenv('PROLIFIC_COMPLETION_CODE')
 
 
 # Quick-start development settings - unsuitable for production
