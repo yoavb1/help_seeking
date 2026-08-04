@@ -34,17 +34,20 @@
                 {% csrf_token %}
 
                 <!-- ========================================== -->
-                <!-- SCREEN 1: WELCOME SCREEN -->
+                <!-- SCREEN 1: WELCOME & CONSENT -->
                 <!-- ========================================== -->
                 {% if step == 1 %}
                 <div class="text-center py-2">
-                    <div class="text-primary mb-4"><i class="fas fa-university fa-4x"></i></div>
+
+                    <!-- WELCOME HEADER & OVERVIEW BOX (Always Remains Visible) -->
+                    <div class="text-primary mb-3"><i class="fas fa-university fa-3x"></i></div>
                     <h3 class="font-weight-bold text-dark mb-3">Welcome to the Workspace Simulation</h3>
-                    <p class="text-secondary leading-relaxed mb-4">
-                        Thank you for agreeing to participate in this study. This research project investigates strategic decision-making, resource allocation.
+                    <p class="text-secondary leading-relaxed mb-3">
+                        Thank you for agreeing to participate in this study. This research project investigates strategic decision-making and resource allocation.
                     </p>
 
-                    <div class="row text-left my-4 bg-light p-3 rounded border">
+                    <!-- Overview Box (Stays on screen) -->
+                    <div class="row text-left my-3 bg-light p-3 rounded border">
                         <div class="col-6 mb-2">
                             <large class="text-muted font-weight-bold"><i class="fas fa-clock mr-1 text-primary"></i> Estimated Duration:</large><br>
                             <span class="text-dark">~10 Minutes</span>
@@ -53,35 +56,58 @@
                             <large class="text-muted font-weight-bold"><i class="fas fa-desktop mr-1 text-primary"></i> Recommended Device:</large><br>
                             <span class="text-dark">Desktop / Laptop</span>
                         </div>
-                        <div class="col-12 mt-2">
+                        <div class="col-12 mt-1">
                             <large class="text-muted font-weight-bold"><i class="fas fa-users mr-1 text-primary"></i> Environment Setup:</large><br>
                             <span class="text-dark">You will be matched in real-time with 3 other active participants currently online.</span>
                         </div>
                     </div>
 
-                    <!-- 1. INITIAL START BUTTON -->
-                    <div id="welcome-action-box">
-                        <button type="button" id="btn-start-matchmaking" class="btn btn-primary btn-lg px-5 mt-2 font-weight-bold shadow-sm">
-                            Join Team Workspace <i class="fas fa-users ml-2"></i>
-                        </button>
+                    <!-- CONSENT SECTION WRAPPER (Hides when button is clicked) -->
+                    <div id="consent-section-wrapper">
+                        <!-- Informed Consent Box -->
+                        <div class="text-left mt-4 mb-3">
+                            <h5 class="font-weight-bold text-dark mb-2">Informed Consent Form</h5>
+                            <div class="p-3 bg-white border rounded text-secondary large" style="max-height: 180px; overflow-y: auto; line-height: 1.5; font-size: 0.9rem;">
+                                <p class="mb-2">This study is being conducted by Prof. Ilanit SimanTov-Nachlieli and Prof. Daniel Heller from Tel Aviv University.</p>
+                                <p class="mb-2">You will receive $1.5 for the completion of this study.</p>
+                                <p class="mb-0">Your participation is anonymous and voluntary; you may refuse to participate or withdraw from the study at any time without penalty. All of your answers will remain completely confidential.</p>
+                            </div>
+                        </div>
+
+                        <!-- Consent Checkbox -->
+                        <div class="custom-control custom-checkbox mb-4 text-left">
+                            <input type="checkbox" class="custom-control-input" id="consentCheck" required>
+                            <label class="custom-control-label text-dark font-weight-bold large" for="consentCheck">
+                                I confirm that I am at least 18 years old, have read the terms above, and explicitly consent to participate.
+                            </label>
+                        </div>
+
+                        <!-- Error Banner for Unchecked Consent -->
+                        <div id="consent-error-msg" class="alert alert-danger d-none mb-3 text-left" role="alert">
+                            <i class="fas fa-exclamation-circle mr-1"></i> Please check the consent box before joining the workspace.
+                        </div>
+
+                        <!-- START BUTTON -->
+                        <div id="welcome-action-box">
+                            <button type="button" id="btn-start-matchmaking" class="btn btn-primary btn-lg px-5 font-weight-bold shadow-sm">
+                                Accept Terms & Join Team Workspace <i class="fas fa-users ml-2"></i>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- 2. ANIMATED MATCHMAKING LOADER (HIDDEN INITIALLY) -->
+                    <!-- ANIMATED MATCHMAKING LOADER (Replaces ONLY the consent section) -->
                     <div id="matchmaking-container" class="d-none mt-4 p-4 border rounded bg-light">
                         <h5 class="font-weight-bold text-dark mb-1">Connecting to Team Workspace...</h5>
                         <p class="text-muted large mb-3">Matching active participants into your 4-person team</p>
 
-                        <!-- Spinner -->
                         <div class="my-3">
                             <div class="loading-spinner"></div>
                         </div>
 
-                        <!-- Dynamic Status Message -->
                         <div class="font-weight-bold text-primary mb-3" id="matchmaking-status-text">
                             Searching for active participants...
                         </div>
 
-                        <!-- 4 Participant Slot Icons -->
                         <div class="d-flex justify-content-center align-items-center my-3">
                             <div class="mx-3 text-center slot-icon connected" id="slot-1">
                                 <i class="fas fa-user-circle fa-2x"></i>
@@ -101,7 +127,6 @@
                             </div>
                         </div>
 
-                        <!-- Progress Bar -->
                         <div class="progress mx-auto mt-3" style="height: 8px; max-width: 400px; border-radius: 4px;">
                             <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
                                  id="matchmaking-progress"
@@ -109,7 +134,7 @@
                                  style="width: 25%;"></div>
                         </div>
 
-                        <!-- HIDDEN FORM SUBMIT BUTTON (Triggered automatically once matched) -->
+                        <!-- Hidden submit button triggered after 4/4 slots fill -->
                         <button type="submit" id="btn-submit-step1" class="d-none"></button>
                     </div>
                 </div>
@@ -117,16 +142,27 @@
                 <script>
                     document.addEventListener("DOMContentLoaded", function () {
                         const startBtn = document.getElementById('btn-start-matchmaking');
-                        const welcomeBox = document.getElementById('welcome-action-box');
+                        const consentSection = document.getElementById('consent-section-wrapper');
                         const loaderContainer = document.getElementById('matchmaking-container');
                         const statusText = document.getElementById('matchmaking-status-text');
                         const progressBar = document.getElementById('matchmaking-progress');
                         const submitBtn = document.getElementById('btn-submit-step1');
+                        const consentCheck = document.getElementById('consentCheck');
+                        const errorMsg = document.getElementById('consent-error-msg');
 
                         if (startBtn) {
                             startBtn.addEventListener('click', function () {
-                                // Hide button, show animation container
-                                welcomeBox.classList.add('d-none');
+                                // Check if user agreed to consent
+                                if (!consentCheck.checked) {
+                                    errorMsg.classList.remove('d-none');
+                                    consentCheck.focus();
+                                    return;
+                                }
+
+                                errorMsg.classList.add('d-none');
+
+                                // HIDE ONLY CONSENT SECTION & SHOW MATCHMAKING LOADER
+                                consentSection.classList.add('d-none');
                                 loaderContainer.classList.remove('d-none');
 
                                 let connectedCount = 1;
@@ -135,19 +171,17 @@
                                 const interval = setInterval(() => {
                                     connectedCount++;
 
-                                    // Light up participant slots green one by one
                                     const currentSlot = document.getElementById(`slot-${connectedCount}`);
                                     if (currentSlot) {
                                         currentSlot.classList.remove('text-muted', 'opacity-35');
                                         currentSlot.classList.add('connected');
                                     }
 
-                                    // Update progress bar
                                     const percent = (connectedCount / totalSlots) * 100;
                                     progressBar.style.width = `${percent}%`;
                                     statusText.innerText = `Matched (${connectedCount}/${totalSlots} Participants Connected)...`;
 
-                                    // When 4/4 connected, submit form to Step 2 (Consent)
+                                    // When 4/4 connected, submit form directly
                                     if (connectedCount === totalSlots) {
                                         clearInterval(interval);
                                         statusText.className = "font-weight-bold text-success mb-3";
@@ -157,42 +191,11 @@
                                             submitBtn.click();
                                         }, 1000);
                                     }
-                                }, 1500); // Fills a new participant slot every 1.5s
+                                }, 1500);
                             });
                         }
                     });
                 </script>
-                {% endif %}
-
-
-                <!-- ========================================== -->
-                <!-- SCREEN 2: CONSENT FORM -->
-                <!-- ========================================== -->
-                {% if step == 2 %}
-                <div>
-                    <h4 class="font-weight-bold text-dark text-center mb-3">Informed Consent Form</h4>
-{#                    <p class="text-muted text-center large mb-3">Please review the research terms carefully before providing your consent to proceed.</p>#}
-
-                    <div class="p-3 bg-white border rounded text-secondary large mb-4" style="max-height: 280px; overflow-y: scroll; line-height: 1.6;">
-                        <p>This study is being conducted by Prof. Ilanit SimanTov-Nachlieli and Prof. Daniel Heller from Tel Aviv University.</p>
-                        <p>You will receive $1.5 for the completion of this study.</p>
-
-                        <p>Your participation is anonymous and voluntary; you may refuse to participate or withdraw from the study at any time without penalty. However, please note that if you withdraw before completion, compensation may not be awarded. All of your answers will remain completely confidential.</p>
-                    </div>
-
-                    <div class="custom-control custom-checkbox mb-4 text-center">
-                        <input type="checkbox" class="custom-control-input" id="consentCheck" required>
-                        <label class="custom-control-label text-dark font-weight-bold large" for="consentCheck">
-                            I confirm that I am at least 18 years old, have read the terms above, and explicitly consent to participate.
-                        </label>
-                    </div>
-
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-primary btn-lg px-5 font-weight-bold shadow-sm">
-                            Accept & Continue <i class="fas fa-arrow-right ml-2"></i>
-                        </button>
-                    </div>
-                </div>
                 {% endif %}
 
 
@@ -203,7 +206,6 @@
                 <div>
                     <h4 class="font-weight-bold text-dark mb-3">Team Setup</h4>
 
-                    <p class="text-secondary">Welcome to the team decision-making phase of the study.</p>
                     <p class="text-secondary">You have been successfully matched into a <strong>4-person team</strong>.</p>
 
                     <div class="p-3 my-4 bg-light border border-info rounded text-center">
@@ -372,11 +374,179 @@
                 </script>
                 {% endif %}
 
-
                 <!-- ========================================== -->
-                <!-- SCREEN 6: SELECTION RESULT & MANIPULATION CHECKS -->
+                <!-- SCREEN 6: AGREEMENT WITH MANIPULATION -->
                 <!-- ========================================== -->
                 {% if step == 6 %}
+                <div>
+
+                    <h4 class="font-weight-bold text-dark mb-3 text-center">Your Assigned Role: <strong>Operations Manager</strong></h4>
+
+                    <!-- TEAM HIERARCHY CHART -->
+                    <div class="card border shadow-sm mb-4">
+                        <div class="card-header bg-light py-2 text-center">
+                            <h6 class="font-weight-bold text-dark mb-0">
+                                <i class="fas fa-sitemap text-primary mr-2"></i>Team Hierarchy
+                            </h6>
+                        </div>
+                        <div class="card-body p-4 bg-white">
+
+                            <!-- LEVEL 1: MANAGER (YOU / Participant 102) -->
+                            <div class="d-flex justify-content-center">
+                                <div class="p-2 px-3 border border-primary rounded text-center bg-primary text-white shadow-sm" style="min-width: 200px;">
+                                    <div class="large font-weight-bold text-uppercase opacity-75">Operations Manager</div>
+                                    <div class="font-weight-bold fs-6"><i class="fas fa-user-shield mr-1"></i> Participant 102 (You)</div>
+                                </div>
+                            </div>
+
+                            <!-- TREE CONNECTORS (CSS Lines) -->
+                            <div class="d-flex flex-column align-items-center my-1">
+                                <!-- Vertical stem down from Manager -->
+                                <div style="width: 2px; height: 16px; background-color: #007bff;"></div>
+
+                                <!-- Horizontal branch spanning across all subordinates -->
+                                <div style="width: 66%; height: 2px; background-color: #007bff;"></div>
+
+                                <!-- Three vertical stems dropping to subordinates -->
+                                <div class="d-flex justify-content-between" style="width: 66%;">
+                                    <div style="width: 2px; height: 16px; background-color: #007bff;"></div>
+                                    <div style="width: 2px; height: 16px; background-color: #007bff;"></div>
+                                    <div style="width: 2px; height: 16px; background-color: #007bff;"></div>
+                                </div>
+                            </div>
+
+                            <!-- LEVEL 2: SUBORDINATES (101, 103, 104) -->
+                            <div class="row text-center justify-content-center">
+
+                                <!-- Subordinate 101 -->
+                                <div class="col-4 col-md-3 px-1">
+                                    <div class="p-2 border rounded bg-light text-muted">
+                                        <div class="extra-large font-weight-bold text-uppercase" style="font-size: 0.65rem;">Subordinate</div>
+                                        <div class="large font-weight-bold text-dark"><i class="fas fa-user mr-1"></i> Participant 101</div>
+                                    </div>
+                                </div>
+
+                                <!-- Subordinate 103 (Highlighted Advisor) -->
+                               <div class="col-4 col-md-3 px-1">
+                                    <div class="p-2 border rounded bg-light text-muted">
+                                        <div class="extra-large font-weight-bold text-uppercase" style="font-size: 0.65rem;">Subordinate</div>
+                                        <div class="large font-weight-bold text-dark"><i class="fas fa-user mr-1"></i> Participant 103</div>
+                                    </div>
+                                </div>
+
+                                <!-- Subordinate 104 -->
+                                <div class="col-4 col-md-3 px-1">
+                                    <div class="p-2 border rounded bg-light text-muted">
+                                        <div class="extra-large font-weight-bold text-uppercase" style="font-size: 0.65rem;">Subordinate</div>
+                                        <div class="large font-weight-bold text-dark"><i class="fas fa-user mr-1"></i> Participant 104</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if condition == 'dominance' %}
+                    <!-- DOMINANCE MANIPULATION -->
+                    <div class="p-4 rounded mb-4" style="background-color: #f8f9fa; border-left: 5px solid #6c757d;">
+                        <h6 class="font-weight-bold text-primary mb-2"><i class="fas fa-user-shield mr-2"></i> Important! Please read carefully</h6>
+                        <p class="text-dark mb-3" style="line-height: 1.6; font-size: 1.05rem;">
+                            <strong>You are expected to lead with a dominant and assertive style</strong>.
+                            Specifically, in interactions with members within the team, you are <strong>controlling</strong> and are seen as a manager who is <strong>forceful</strong> in your behavior towards others. You remain an asset to the team.
+                        </p>
+                        <p class="text-primary font-weight-bold mb-0" style="font-size: 1rem;">
+                            Try to embody this role and this specific managerial style, even if they are outside of your usual patterns.
+                        </p>
+                    </div>
+
+                    {% elif condition == 'prestige' %}
+                    <!-- PRESTIGE MANIPULATION -->
+                    <div class="p-4 rounded mb-4" style="background-color: #f8f9fa; border-left: 5px solid #6c757d;">
+                        <h6 class="font-weight-bold text-primary mb-2"><i class="fas fa-award mr-2"></i> Important! Please read carefully</h6>
+                        <p class="text-dark mb-3" style="line-height: 1.6; font-size: 1.05rem;">
+                            <strong>You are expected to lead with a respect and admiration style.</strong>
+                            Specifically, in interactions with members within the team, you share your <strong>knowledge</strong>, <strong>expertise</strong>, and <strong>skills</strong>, and are seen as a manager who is granted <strong>high esteem</strong> from others. You remain an asset to the team.
+                        </p>
+                        <p class="text-primary font-weight-bold mb-0" style="font-size: 1rem;">
+                            Try to embody this role and this specific managerial style, even if they are outside of your usual patterns.
+                        </p>
+                    </div>
+
+                    {% else %}
+                    <!-- CONTROL CONDITION -->
+                    <div class="p-4 rounded mb-4" style="background-color: #f8f9fa; border-left: 5px solid #6c757d;">
+                        <h6 class="font-weight-bold text-secondary mb-2"><i class="fas fa-user-check mr-2"></i> Important! Please read carefully</h6>
+                        <p class="text-dark large mb-2" style="line-height: 1.6;">
+                            Based on the Becker & Klein questionnaire results, you have been chosen to act as the Operations Manager for your team. Your results indicate that you have strong managerial potential. You have ambitions to continue growing in the company. You remain an asset to the company.
+                        </p>
+                        <p class="text-secondary large font-weight-bold mb-0">
+                            Try to embody this role and this specific managerial style, even if they are outside of your usual patterns.
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    <!-- COMPREHENSION CHECK -->
+                        <div class="card p-4 shadow-sm mb-4">
+                            <h4 class="h5 font-weight-bold mb-3 text-secondary" style="text-decoration: underline;">
+                                According to the above:
+                            </h4>
+
+                            <!-- DJANGO ERROR MESSAGE DISPLAY -->
+                            {% if error_message %}
+                            <div class="alert alert-danger mb-3" role="alert">
+                                <i class="fas fa-exclamation-circle mr-1"></i> {{ error_message }}
+                            </div>
+                            {% endif %}
+
+                            <!-- CLIENT-SIDE JS ERROR MESSAGE DISPLAY -->
+                            <div id="comp-check-error" class="alert alert-danger d-none mb-3" role="alert">
+                                <i class="fas fa-exclamation-circle mr-1"></i> Incorrect answer. Please re-read the role text above and select the correct option to continue.
+                            </div>
+
+                            <div class="form-group mb-0">
+                                <div class="custom-control custom-radio mb-3">
+                                    <input type="radio" id="comp_opt_1" name="comprehension_check" value="1" class="custom-control-input" required>
+                                    <label class="custom-control-label" for="comp_opt_1">
+                                        You influence others by being dominant, assertive, and taking control.
+                                    </label>
+                                </div>
+
+                                <div class="custom-control custom-radio mb-3">
+                                    <input type="radio" id="comp_opt_2" name="comprehension_check" value="2" class="custom-control-input">
+                                    <label class="custom-control-label" for="comp_opt_2">
+                                        You influence others by being respected and admired.
+                                    </label>
+                                </div>
+
+                                <div class="custom-control custom-radio mb-3">
+                                    <input type="radio" id="comp_opt_3" name="comprehension_check" value="3" class="custom-control-input">
+                                    <label class="custom-control-label" for="comp_opt_3">
+                                        You influence others by organizing and coordinating activities in the organization.
+                                    </label>
+                                </div>
+
+                                <div class="custom-control custom-radio mb-3">
+                                    <input type="radio" id="comp_opt_4" name="comprehension_check" value="4" class="custom-control-input">
+                                    <label class="custom-control-label" for="comp_opt_4">
+                                        I do not know.
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="mt-4 text-center">
+                                <button type="button" class="btn btn-primary btn-lg px-5 font-weight-bold shadow-sm" onclick="validateStep6_5()">
+                                    Continue to Task Overview <i class="fas fa-arrow-right ml-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                <!-- ========================================== -->
+                <!-- SCREEN 7: SELECTION RESULT & MANIPULATION CHECKS -->
+                <!-- ========================================== -->
+                {% if step == 7 %}
                 <div>
 
                     <h4 class="font-weight-bold text-dark mb-3 text-center">Your Assigned Role: <strong>Operations Manager</strong></h4>
@@ -588,184 +758,15 @@
 
 
                 <!-- ========================================== -->
-                <!-- SCREEN 7: AGREEMENT WITH MANIPULATION -->
-                <!-- ========================================== -->
-                {% if step == 7 %}
-                <div>
-
-                    <h4 class="font-weight-bold text-dark mb-3 text-center">Your Assigned Role: <strong>Operations Manager</strong></h4>
-
-                    <!-- TEAM HIERARCHY CHART -->
-                    <div class="card border shadow-sm mb-4">
-                        <div class="card-header bg-light py-2 text-center">
-                            <h6 class="font-weight-bold text-dark mb-0">
-                                <i class="fas fa-sitemap text-primary mr-2"></i>Team Hierarchy
-                            </h6>
-                        </div>
-                        <div class="card-body p-4 bg-white">
-
-                            <!-- LEVEL 1: MANAGER (YOU / Participant 102) -->
-                            <div class="d-flex justify-content-center">
-                                <div class="p-2 px-3 border border-primary rounded text-center bg-primary text-white shadow-sm" style="min-width: 200px;">
-                                    <div class="large font-weight-bold text-uppercase opacity-75">Operations Manager</div>
-                                    <div class="font-weight-bold fs-6"><i class="fas fa-user-shield mr-1"></i> Participant 102 (You)</div>
-                                </div>
-                            </div>
-
-                            <!-- TREE CONNECTORS (CSS Lines) -->
-                            <div class="d-flex flex-column align-items-center my-1">
-                                <!-- Vertical stem down from Manager -->
-                                <div style="width: 2px; height: 16px; background-color: #007bff;"></div>
-
-                                <!-- Horizontal branch spanning across all subordinates -->
-                                <div style="width: 66%; height: 2px; background-color: #007bff;"></div>
-
-                                <!-- Three vertical stems dropping to subordinates -->
-                                <div class="d-flex justify-content-between" style="width: 66%;">
-                                    <div style="width: 2px; height: 16px; background-color: #007bff;"></div>
-                                    <div style="width: 2px; height: 16px; background-color: #007bff;"></div>
-                                    <div style="width: 2px; height: 16px; background-color: #007bff;"></div>
-                                </div>
-                            </div>
-
-                            <!-- LEVEL 2: SUBORDINATES (101, 103, 104) -->
-                            <div class="row text-center justify-content-center">
-
-                                <!-- Subordinate 101 -->
-                                <div class="col-4 col-md-3 px-1">
-                                    <div class="p-2 border rounded bg-light text-muted">
-                                        <div class="extra-large font-weight-bold text-uppercase" style="font-size: 0.65rem;">Subordinate</div>
-                                        <div class="large font-weight-bold text-dark"><i class="fas fa-user mr-1"></i> Participant 101</div>
-                                    </div>
-                                </div>
-
-                                <!-- Subordinate 103 (Highlighted Advisor) -->
-                               <div class="col-4 col-md-3 px-1">
-                                    <div class="p-2 border rounded bg-light text-muted">
-                                        <div class="extra-large font-weight-bold text-uppercase" style="font-size: 0.65rem;">Subordinate</div>
-                                        <div class="large font-weight-bold text-dark"><i class="fas fa-user mr-1"></i> Participant 103</div>
-                                    </div>
-                                </div>
-
-                                <!-- Subordinate 104 -->
-                                <div class="col-4 col-md-3 px-1">
-                                    <div class="p-2 border rounded bg-light text-muted">
-                                        <div class="extra-large font-weight-bold text-uppercase" style="font-size: 0.65rem;">Subordinate</div>
-                                        <div class="large font-weight-bold text-dark"><i class="fas fa-user mr-1"></i> Participant 104</div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-
-                    {% if condition == 'dominance' %}
-                    <!-- DOMINANCE MANIPULATION -->
-                    <div class="p-4 rounded mb-4" style="background-color: #f8f9fa; border-left: 5px solid #6c757d;">
-                        <h6 class="font-weight-bold text-primary mb-2"><i class="fas fa-user-shield mr-2"></i> Important! Please read carefully</h6>
-                        <p class="text-dark mb-3" style="line-height: 1.6; font-size: 1.05rem;">
-                            <strong>You are expected to lead with a dominant and assertive style</strong>.
-                            Specifically, in interactions with members within the team, you are <strong>controlling</strong> and are seen as a manager who is <strong>forceful</strong> in your behavior towards others. You remain an asset to the team.
-                        </p>
-                        <p class="text-primary font-weight-bold mb-0" style="font-size: 1rem;">
-                            Try to embody this role and this specific managerial style, even if they are outside of your usual patterns.
-                        </p>
-                    </div>
-
-                    {% elif condition == 'prestige' %}
-                    <!-- PRESTIGE MANIPULATION -->
-                    <div class="p-4 rounded mb-4" style="background-color: #f8f9fa; border-left: 5px solid #6c757d;">
-                        <h6 class="font-weight-bold text-primary mb-2"><i class="fas fa-award mr-2"></i> Important! Please read carefully</h6>
-                        <p class="text-dark mb-3" style="line-height: 1.6; font-size: 1.05rem;">
-                            <strong>You are expected to lead with a respect and admiration style.</strong>
-                            Specifically, in interactions with members within the team, you share your <strong>knowledge</strong>, <strong>expertise</strong>, and <strong>skills</strong>, and are seen as a manager who is granted <strong>high esteem</strong> from others. You remain an asset to the team.
-                        </p>
-                        <p class="text-primary font-weight-bold mb-0" style="font-size: 1rem;">
-                            Try to embody this role and this specific managerial style, even if they are outside of your usual patterns.
-                        </p>
-                    </div>
-
-                    {% else %}
-                    <!-- CONTROL CONDITION -->
-                    <div class="p-4 rounded mb-4" style="background-color: #f8f9fa; border-left: 5px solid #6c757d;">
-                        <h6 class="font-weight-bold text-secondary mb-2"><i class="fas fa-user-check mr-2"></i> Important! Please read carefully</h6>
-                        <p class="text-dark large mb-2" style="line-height: 1.6;">
-                            Based on the Becker & Klein questionnaire results, you have been chosen to act as the Operations Manager for your team. Your results indicate that you have strong managerial potential. You have ambitions to continue growing in the company. You remain an asset to the company.
-                        </p>
-                        <p class="text-secondary large font-weight-bold mb-0">
-                            Try to embody this role and this specific managerial style, even if they are outside of your usual patterns.
-                        </p>
-                    </div>
-                    {% endif %}
-
-                    <!-- COMPREHENSION CHECK -->
-                        <div class="card p-4 shadow-sm mb-4">
-                            <h4 class="h5 font-weight-bold mb-3 text-secondary" style="text-decoration: underline;">
-                                According to the above:
-                            </h4>
-
-                            <!-- DJANGO ERROR MESSAGE DISPLAY -->
-                            {% if error_message %}
-                            <div class="alert alert-danger mb-3" role="alert">
-                                <i class="fas fa-exclamation-circle mr-1"></i> {{ error_message }}
-                            </div>
-                            {% endif %}
-
-                            <!-- CLIENT-SIDE JS ERROR MESSAGE DISPLAY -->
-                            <div id="comp-check-error" class="alert alert-danger d-none mb-3" role="alert">
-                                <i class="fas fa-exclamation-circle mr-1"></i> Incorrect answer. Please re-read the role text above and select the correct option to continue.
-                            </div>
-
-                            <div class="form-group mb-0">
-                                <div class="custom-control custom-radio mb-3">
-                                    <input type="radio" id="comp_opt_1" name="comprehension_check" value="1" class="custom-control-input" required>
-                                    <label class="custom-control-label" for="comp_opt_1">
-                                        You influence others by being dominant, assertive, and taking control.
-                                    </label>
-                                </div>
-
-                                <div class="custom-control custom-radio mb-3">
-                                    <input type="radio" id="comp_opt_2" name="comprehension_check" value="2" class="custom-control-input">
-                                    <label class="custom-control-label" for="comp_opt_2">
-                                        You influence others by being respected and admired.
-                                    </label>
-                                </div>
-
-                                <div class="custom-control custom-radio mb-3">
-                                    <input type="radio" id="comp_opt_3" name="comprehension_check" value="3" class="custom-control-input">
-                                    <label class="custom-control-label" for="comp_opt_3">
-                                        You influence others by organizing and coordinating activities in the organization.
-                                    </label>
-                                </div>
-
-                                <div class="custom-control custom-radio mb-3">
-                                    <input type="radio" id="comp_opt_4" name="comprehension_check" value="4" class="custom-control-input">
-                                    <label class="custom-control-label" for="comp_opt_4">
-                                        I do not know.
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Submit Button -->
-                            <div class="mt-4 text-center">
-                                <button type="button" class="btn btn-primary btn-lg px-5 font-weight-bold shadow-sm" onclick="validateStep6_5()">
-                                    Continue to Task Overview <i class="fas fa-arrow-right ml-2"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-
-
-                <!-- ========================================== -->
                 <!-- SCREEN 8: TASK BRIEF & SIMULATION RULES -->
                 <!-- ========================================== -->
                 {% if step == 8 %}
                 <div>
-                    <h5 class="font-weight-bold text-dark mb-2">Overview of the Simulation</h5>
-                    <p class="text-secondary large mb-3">
-                        The simulation consists of two tasks, in which you serve as the team leader over participants 101, 103, and 104.
-                    </p>
+                    <h5 class="font-weight-bold text-dark mb-2">This simulation consists of two tasks, in which you serve as the team leader over participants 101, 103, and 104.
+                    </h5>
+{#                    <p class="text-secondary large mb-3">#}
+{#                        The simulation consists of two tasks, in which you serve as the team leader over participants 101, 103, and 104.#}
+{#                    </p>#}
 
                     <!-- Task Rules & Constraints Box -->
                     <div class="bg-light p-3 rounded border mb-4">
@@ -780,7 +781,7 @@
                                 <strong>Target Constraint:</strong> The total sum across all three transit options must equal <strong>exactly 15 containers</strong> for every allocation.
                             </li>
                             <li class="mb-1">
-                                <strong>Scoring & Assistance Surcharge:</strong> You will earn <strong>+3 points</strong> for every correct allocation decision. Consulting an advisor (subordinate or AI) incurs a <strong>1-point surcharge (-1 point)</strong> from your score.
+                                <strong>Scoring & Assistance Surcharge:</strong> You will earn <strong>+3 points</strong> for every correct allocation decision. Seeking help (subordinate or AI) incurs a <strong>1-point surcharge (-1 point)</strong> from your score.
                             </li>
                             <li class="mb-1">
                                 <strong>Bonus Lottery:</strong> In addition to your base participation prolific pay, the points you earn during the upcoming task will be converted directly into lottery tickets for a $10 bonus prize. The more tickets you collect, the higher your probability of winning!

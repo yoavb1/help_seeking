@@ -121,7 +121,43 @@ def onboarding_view(request):
     # 3. Handle Form Submissions (POST requests)
     if request.method == "POST":
         current_step = request.session.get('onboarding_step', 1)
-        if current_step == 6:
+
+        # STEP 1: Combined Welcome & Consent -> Jump straight to Step 3
+        if current_step == 1:
+            request.session['onboarding_step'] = 3
+            return redirect('experiment:onboarding')
+
+        elif current_step == 6:
+            user_answer = request.POST.get('comprehension_check')
+
+            # Correct options: 1 = Dominance, 2 = Prestige, 3 = Control
+            expected_answers = {
+                'dominance': '1',
+                'prestige': '2',
+                'control': '3'
+            }
+            correct_answer = expected_answers.get(experiment_session.condition, '1')
+
+            if user_answer and user_answer == correct_answer:
+                if hasattr(experiment_session, 'passed_comprehension_check'):
+                    experiment_session.passed_comprehension_check = True
+                    experiment_session.save()
+
+                request.session['onboarding_step'] = 7
+                return redirect('experiment:onboarding')
+            else:
+                # If server-side validation fails, return step 6 with error
+                return render(
+                    request,
+                    'experiment/onboarding.html',
+                    {
+                        'step': 6,
+                        'condition': experiment_session.condition,
+                        'error_message': 'Incorrect answer. Please re-read the description above and select the correct option to continue.'
+                    }
+                )
+
+        if current_step == 7:
             item_1 = request.POST.get('mc_item_1')
             item_2 = request.POST.get('mc_item_2')
             item_3 = request.POST.get('mc_item_3')
@@ -150,38 +186,8 @@ def onboarding_view(request):
             experiment_session.save()
 
             # Advance to Step 7 (Overview & Task Rules)
-            request.session['onboarding_step'] = 7
+            request.session['onboarding_step'] = 8
             return redirect('experiment:onboarding')
-
-        elif current_step == 7:
-            user_answer = request.POST.get('comprehension_check')
-
-            # Correct options: 1 = Dominance, 2 = Prestige, 3 = Control
-            expected_answers = {
-                'dominance': '1',
-                'prestige': '2',
-                'control': '3'
-            }
-            correct_answer = expected_answers.get(experiment_session.condition, '1')
-
-            if user_answer and user_answer == correct_answer:
-                if hasattr(experiment_session, 'passed_comprehension_check'):
-                    experiment_session.passed_comprehension_check = True
-                    experiment_session.save()
-
-                request.session['onboarding_step'] = 8
-                return redirect('experiment:onboarding')
-            else:
-                # If server-side validation fails, return step 7 with error
-                return render(
-                    request,
-                    'experiment/onboarding.html',
-                    {
-                        'step': 7,
-                        'condition': experiment_session.condition,
-                        'error_message': 'Incorrect answer. Please re-read the description above and select the correct option to continue.'
-                    }
-                )
 
         # STEP 8: Final Onboarding Step (Task Overview) -> Redirect to Practice Run
         elif current_step == 8:
@@ -463,8 +469,12 @@ def survey_view(request):
         )
 
         return redirect('experiment:task_update_notice')
+    if 'dominant' in request.session['style']:
+        style = "leading with dominant and assertiveness and being controlling and forceful towards others"
+    else:
+        style = "leading with respect and admiration, while sharing information and skills with others"
 
-    return render(request, 'experiment/survey.html', context={'style': request.session['style'].replace('Leads', 'leads')[:-1]})
+    return render(request, 'experiment/survey.html', context={'style': style})
 
 
 @never_cache
