@@ -586,6 +586,7 @@ def analytics_dashboard(request):
         'accuracy_rate': accuracy_rate,
         'avg_rt': avg_rt,
         'ai_usage_rate': ai_usage_rate,
+        'completion_code': PROLIFIC_COMPLETION_CODE
     }
     return render(request, 'admin_dashboard.html', context)
 
