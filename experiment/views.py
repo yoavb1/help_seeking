@@ -17,10 +17,7 @@ from .models import *
 from django.views.decorators.cache import never_cache
 import traceback
 
-try:
-    PROLIFIC_COMPLETION_CODE = settings.PROLIFIC_COMPLETION_CODE
-except:
-    PROLIFIC_COMPLETION_CODE = "222222"
+PROLIFIC_COMPLETION_CODE = settings.PROLIFIC_COMPLETION_CODE
 
 def load_and_shuffle_questions(count, filename='questions.json', difficulty=None):
     """
