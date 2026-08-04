@@ -153,8 +153,38 @@ def onboarding_view(request):
             request.session['onboarding_step'] = 7
             return redirect('experiment:onboarding')
 
-        # STEP 7: Final Onboarding Step (Task Overview) -> Redirect to Practice Run
         elif current_step == 7:
+            user_answer = request.POST.get('comprehension_check')
+
+            # Correct options: 1 = Dominance, 2 = Prestige, 3 = Control
+            expected_answers = {
+                'dominance': '1',
+                'prestige': '2',
+                'control': '3'
+            }
+            correct_answer = expected_answers.get(experiment_session.condition, '1')
+
+            if user_answer and user_answer == correct_answer:
+                if hasattr(experiment_session, 'passed_comprehension_check'):
+                    experiment_session.passed_comprehension_check = True
+                    experiment_session.save()
+
+                request.session['onboarding_step'] = 8
+                return redirect('experiment:onboarding')
+            else:
+                # If server-side validation fails, return step 7 with error
+                return render(
+                    request,
+                    'experiment/onboarding.html',
+                    {
+                        'step': 7,
+                        'condition': experiment_session.condition,
+                        'error_message': 'Incorrect answer. Please re-read the description above and select the correct option to continue.'
+                    }
+                )
+
+        # STEP 8: Final Onboarding Step (Task Overview) -> Redirect to Practice Run
+        elif current_step == 8:
             # Clear or complete onboarding session step if needed, then finish onboarding
             return redirect('experiment:practice_run')
 
@@ -405,6 +435,7 @@ def survey_view(request):
             nervous_seeking=request.POST.get('nervous_seeking'),
             task_anxiety=request.POST.get('task_anxiety'),
             task_difficulty=request.POST.get('task_difficulty'),
+            agree_with_manipulation=request.POST.get('agree_with_manipulation'),
 
             # Section 2
             status_reduction=request.POST.get('status_reduction'),
@@ -433,7 +464,7 @@ def survey_view(request):
 
         return redirect('experiment:task_update_notice')
 
-    return render(request, 'experiment/survey.html')
+    return render(request, 'experiment/survey.html', context={'style': request.session['style'].replace('Leads', 'leads')[:-1]})
 
 
 @never_cache
@@ -589,26 +620,26 @@ def download_trials_csv(request):
         "Attention Check Value",
         "Passed Attention Check",
 
-        # Post-Task Workspace Survey (Section 1 to Section 5)
-        "Nervous Seeking",
-        "Task Anxiety",
-        "Task Difficulty",
-        "Status Reduction",
-        "Incompetent Rating",
-        "Inexperienced Rating",
-        "Lesser Rating",
-        "Org Status Hurt Rating",
-        "Held Against Rating",
-        "Subordinate Rejection Concern",
-        "Subordinate Compliance Expectation",
-        "Relational Strengthen",
-        "Relational Trust",
-        "Relational Collaboration",
-        "Relational Value Subordinate",
-        "Instrumental Human",
-        "Instrumental AI",
-        "Perceived Competence Human",
-        "Perceived Competence AI",
+        # # Post-Task Workspace Survey (Section 1 to Section 5)
+        # "Nervous Seeking",
+        # "Task Anxiety",
+        # "Task Difficulty",
+        # "Status Reduction",
+        # "Incompetent Rating",
+        # "Inexperienced Rating",
+        # "Lesser Rating",
+        # "Org Status Hurt Rating",
+        # "Held Against Rating",
+        # "Subordinate Rejection Concern",
+        # "Subordinate Compliance Expectation",
+        # "Relational Strengthen",
+        # "Relational Trust",
+        # "Relational Collaboration",
+        # "Relational Value Subordinate",
+        # "Instrumental Human",
+        # "Instrumental AI",
+        # "Perceived Competence Human",
+        # "Perceived Competence AI",
 
         # Demographics
         "Participant Age",
@@ -619,7 +650,7 @@ def download_trials_csv(request):
 
     for t in trials:
         s = t.session
-        survey = getattr(s, 'survey_response', None) if s else None
+        # survey = getattr(s, 'survey_response', None) if s else None
 
         writer.writerow([
             # Session Metadata
@@ -656,25 +687,25 @@ def download_trials_csv(request):
             getattr(s, "passed_attention_check", False) if s else False,
 
             # Post-Task Workspace Survey Data
-            getattr(survey, "nervous_seeking", getattr(s, "nervous_seeking", "")),
-            getattr(survey, "task_anxiety", getattr(s, "task_anxiety", "")),
-            getattr(survey, "task_difficulty", getattr(s, "task_difficulty", "")),
-            getattr(survey, "status_reduction", getattr(s, "status_reduction", "")),
-            getattr(survey, "incompetent", getattr(s, "incompetent_rating", "")),
-            getattr(survey, "inexperienced", getattr(s, "inexperienced_rating", "")),
-            getattr(survey, "lesser", getattr(s, "lesser_rating", "")),
-            getattr(survey, "org_status_hurt", getattr(s, "org_status_hurt_rating", "")),
-            getattr(survey, "held_against", getattr(s, "held_against_rating", "")),
-            getattr(survey, "subordinate_rejection_concern", ""),
-            getattr(survey, "subordinate_compliance_expectation", ""),
-            getattr(survey, "relational_strengthen", ""),
-            getattr(survey, "relational_trust", ""),
-            getattr(survey, "relational_collaboration", ""),
-            getattr(survey, "relational_value_subordinate", ""),
-            getattr(survey, "instrumental_human", ""),
-            getattr(survey, "instrumental_ai", ""),
-            getattr(survey, "perceived_competence_human", ""),
-            getattr(survey, "perceived_competence_ai", ""),
+            # getattr(survey, "nervous_seeking", getattr(s, "nervous_seeking", "")),
+            # getattr(survey, "task_anxiety", getattr(s, "task_anxiety", "")),
+            # getattr(survey, "task_difficulty", getattr(s, "task_difficulty", "")),
+            # getattr(survey, "status_reduction", getattr(s, "status_reduction", "")),
+            # getattr(survey, "incompetent", getattr(s, "incompetent_rating", "")),
+            # getattr(survey, "inexperienced", getattr(s, "inexperienced_rating", "")),
+            # getattr(survey, "lesser", getattr(s, "lesser_rating", "")),
+            # getattr(survey, "org_status_hurt", getattr(s, "org_status_hurt_rating", "")),
+            # getattr(survey, "held_against", getattr(s, "held_against_rating", "")),
+            # getattr(survey, "subordinate_rejection_concern", ""),
+            # getattr(survey, "subordinate_compliance_expectation", ""),
+            # getattr(survey, "relational_strengthen", ""),
+            # getattr(survey, "relational_trust", ""),
+            # getattr(survey, "relational_collaboration", ""),
+            # getattr(survey, "relational_value_subordinate", ""),
+            # getattr(survey, "instrumental_human", ""),
+            # getattr(survey, "instrumental_ai", ""),
+            # getattr(survey, "perceived_competence_human", ""),
+            # getattr(survey, "perceived_competence_ai", ""),
 
             # Demographics
             getattr(s, "participant_age", "") if s else "",
@@ -692,8 +723,10 @@ def download_survey_csv(request):
     writer = csv.writer(response)
 
     writer.writerow([
-        "ID", "Submitted At",
-        "Nervous Seeking", "Task Anxiety", "Task Difficulty",
+        "ID", "Session ID",
+        "Prolific PID",
+        "Submitted At",
+        "Nervous Seeking", "Task Anxiety", "Task Difficulty", 'Agree with Manipulation',
         "Status Reduction", "Incompetent", "Inexperienced", "Lesser", "Org Status Hurt", "Held Against",
         "Subordinate Rejection Concern", "Subordinate Compliance Expectation",
         "Relational Strengthen", "Relational Trust", "Relational Collaboration", "Relational Value Subordinate",
@@ -701,10 +734,15 @@ def download_survey_csv(request):
     ])
 
     for r in SurveyResponse.objects.all().order_by('-created_at'):
+        session = getattr(r, 'session', None)
+
+        session_id = getattr(session, 'session_id', 'N/A') if session else getattr(r, 'session_id', 'N/A')
+        prolific_pid = getattr(session, 'prolific_pid', 'N/A') if session else getattr(r, 'prolific_pid', 'N/A')
+
         writer.writerow([
-            r.id,
+            r.id, session_id, prolific_pid,
             r.created_at.strftime("%Y-%m-%d %H:%M:%S") if hasattr(r, 'created_at') else "",
-            r.nervous_seeking, r.task_anxiety, r.task_difficulty,
+            r.nervous_seeking, r.task_anxiety, r.task_difficulty, r.agree_with_manipulation,
             r.status_reduction, r.incompetent, r.inexperienced, r.lesser, r.org_status_hurt, r.held_against,
             r.subordinate_rejection_concern, r.subordinate_compliance_expectation,
             r.relational_strengthen, r.relational_trust, r.relational_collaboration, r.relational_value_subordinate,

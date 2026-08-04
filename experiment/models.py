@@ -83,6 +83,7 @@ class SurveyResponse(models.Model):
     nervous_seeking = models.IntegerField()
     task_anxiety = models.IntegerField()
     task_difficulty = models.IntegerField()
+    agree_with_manipulation = models.IntegerField()
 
     # 2. Social Costs & Status Concerns
     status_reduction = models.IntegerField()

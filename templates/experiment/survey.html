@@ -75,6 +75,37 @@
                     </div>
                 </div>
 
+                <!-- SECTION 2: Agree with Manipulation -->
+                <div class="mb-5">
+                    <div class="table-responsive">
+                        <table class="table table-bordered likert-table bg-white shadow-sm">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th style="width: 37%;">Statement</th>
+                                    <th style="width: 9%;">Strongly Disagree</th>
+                                    <th style="width: 9%;">Disagree</th>
+                                    <th style="width: 9%;">Somewhat Disagree</th>
+                                    <th style="width: 9%;">Neutral</th>
+                                    <th style="width: 9%;">Somewhat Agree</th>
+                                    <th style="width: 9%;">Agree</th>
+                                    <th style="width: 9%;">Strongly Agree</th>
+                                </tr>
+                            </thead>
+                            <tr>
+                                    <td>To what extent was it difficult for you to adopt the managerial role - specifically,  <strong>{{ style }}</strong>?</td>
+                                    <td><input type="radio" name="agree_with_manipulation" value="1" required></td>
+                                    <td><input type="radio" name="agree_with_manipulation" value="2"></td>
+                                    <td><input type="radio" name="agree_with_manipulation" value="3"></td>
+                                    <td><input type="radio" name="agree_with_manipulation" value="4"></td>
+                                    <td><input type="radio" name="agree_with_manipulation" value="5"></td>
+                                    <td><input type="radio" name="agree_with_manipulation" value="6"></td>
+                                    <td><input type="radio" name="agree_with_manipulation" value="7"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <!-- RANDOMIZED BLOCKS CONTAINER -->
                 <div id="survey-blocks-container">
 
@@ -108,7 +139,7 @@
                                             <td><input type="radio" name="status_reduction" value="7"></td>
                                         </tr>
                                         <tr>
-                                            <td>Makes me seem incompetent.</td>
+                                            <td>Would make me seem incompetent.</td>
                                             <td><input type="radio" name="incompetent" value="1" required></td>
                                             <td><input type="radio" name="incompetent" value="2"></td>
                                             <td><input type="radio" name="incompetent" value="3"></td>
@@ -118,7 +149,7 @@
                                             <td><input type="radio" name="incompetent" value="7"></td>
                                         </tr>
                                         <tr>
-                                            <td>Makes me seem inexperienced.</td>
+                                            <td>Would make me seem inexperienced.</td>
                                             <td><input type="radio" name="inexperienced" value="1" required></td>
                                             <td><input type="radio" name="inexperienced" value="2"></td>
                                             <td><input type="radio" name="inexperienced" value="3"></td>
@@ -128,7 +159,7 @@
                                             <td><input type="radio" name="inexperienced" value="7"></td>
                                         </tr>
                                         <tr>
-                                            <td>Makes me seem lesser than them.</td>
+                                            <td>Would make me seem lesser than them.</td>
                                             <td><input type="radio" name="lesser" value="1" required></td>
                                             <td><input type="radio" name="lesser" value="2"></td>
                                             <td><input type="radio" name="lesser" value="3"></td>
@@ -138,7 +169,7 @@
                                             <td><input type="radio" name="lesser" value="7"></td>
                                         </tr>
                                         <tr>
-                                            <td>Hurts my status in the team.</td>
+                                            <td>Might hurts my status in the team.</td>
                                             <td><input type="radio" name="org_status_hurt" value="1" required></td>
                                             <td><input type="radio" name="org_status_hurt" value="2"></td>
                                             <td><input type="radio" name="org_status_hurt" value="3"></td>
@@ -148,7 +179,7 @@
                                             <td><input type="radio" name="org_status_hurt" value="7"></td>
                                         </tr>
                                         <tr>
-                                            <td>Will be held against me.</td>
+                                            <td>Might be held against me.</td>
                                             <td><input type="radio" name="held_against" value="1" required></td>
                                             <td><input type="radio" name="held_against" value="2"></td>
                                             <td><input type="radio" name="held_against" value="3"></td>
@@ -229,7 +260,7 @@
                     <div class="survey-block" id="competence-comparison-block">
                         <!-- SUBORDINATE SECTION -->
                         <div class="mb-5 competence-sub-section">
-                            <p class="text-muted font-weight-bold h5 mb-2">Regarding your subordinate...</p>
+                            <p class="text-muted font-weight-bold h5 mb-2">Regarding the subordinate assistance...</p>
                             <div class="table-responsive">
                                 <table class="table table-bordered likert-table bg-white shadow-sm">
                                     <thead class="thead-light">

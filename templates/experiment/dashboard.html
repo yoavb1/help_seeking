@@ -83,7 +83,7 @@
     <div class="card p-3 mb-4 bg-white border">
         <h6 class="font-weight-bold text-dark mb-1"><i class="fas fa-info-circle text-info mr-2"></i>Your Responsibility</h6>
         <p class="text-secondary medium mb-0">
-            As Team Leader, you should verify and allocate strategy shipment containers balancing between routing priorities.
+            As a Team Leader, you should verify and allocate shipment containers strategically, balancing between routing priorities
         </p>
     </div>
 
@@ -153,7 +153,7 @@
 
                         <!-- Subordinate Button -->
                         <button type="button"
-                                class="btn btn-consult-grey btn-consult-grey-human font-weight-bold shadow-sm flex-fill"
+                                class="btn btn-consult-grey btn-consult-grey-ai font-weight-bold shadow-sm flex-fill"
                                 id="btn-help-human"
                                 style="padding: 14px 20px; font-size: 1.1rem; max-width: 400px; min-width: 250px;">
                             <i class="fas fa-user-tie mr-2"></i> Consult subordinate (~85% accuracy)
@@ -163,7 +163,7 @@
 
                         <!-- Subordinate Button -->
                         <button type="button"
-                                class="btn btn-consult-grey btn-consult-grey-human font-weight-bold shadow-sm flex-fill"
+                                class="btn btn-consult-grey btn-consult-grey-ai font-weight-bold shadow-sm flex-fill"
                                 id="btn-help-human"
                                 style="padding: 14px 20px; font-size: 1.1rem; max-width: 400px; min-width: 250px;">
                             <i class="fas fa-user-tie mr-2"></i> Consult subordinate (~85% accuracy)
@@ -183,7 +183,7 @@
 
                 <!-- Confirmation Tag -->
                 <div class="mt-2 text-danger font-weight-bold d-none text-center" id="advisor-confirmation-tag" style="font-size: 0.95rem;">
-                    <i class="fas fa-exclamation-triangle mr-1"></i> Support deployed: Allocation auto-populated. A 1-point fee will apply upon Authorization.
+                    <!-- Filled dynamically by JavaScript -->
                 </div>
             </div>
         </form>
@@ -315,7 +315,7 @@ function showLiveTransitionModal() {
         `<div class="instruction-box">
             <center><p><strong>Practice Complete!</strong></p></center>
                 <li><strong>Time Limit:</strong> Unlike the practice phase, you now have a strict limit of <strong>${maxTimePerTrial} seconds per trial</strong>!</li>
-                <li><strong>Bonus Lottery Payout:</strong> Your accumulated points at the end of this live run determine your total entries in the study's <strong>additional cash bonus lottery draw</strong>. Higher scores increase your probability of winning.</li>
+                <li><strong>Bonus Lottery Payout:</strong> As mentioned, you accumulate points at this live simulation - higher scores increase your probability of winning a bonus.</li>
         </div>`,
         `Start Live Simulation`,
         true
@@ -339,12 +339,10 @@ function showInterstitial(title, description, buttonText, showVignette) {
         reminderBox.classList.remove('d-none');
         if (managerCondition === 'prestige') {
             reminderBox.style.borderLeft = "5px solid #007bff";
-            reminderBox.innerHTML = `<strong><i class="fas fa-award mr-2 text-primary"></i> Leadership Style Assessment Reminder:</strong><br>
-                                    {{ style }}`;
+            reminderBox.innerHTML = `<strong><i class="fas fa-award mr-2 text-primary"></i> Remember that in this task, you are expected to lead with  respect and admiration, share information and skills with others.</strong><br>`;
         } else if (managerCondition === 'dominance') {
-            reminderBox.style.borderLeft = "5px solid #dc3545";
-            reminderBox.innerHTML = `<strong><i class="fas fa-user-shield mr-2 text-danger"></i> Leadership Style Assessment Reminder:</strong><br>
-                                    {{ style }}`;
+            reminderBox.style.borderLeft = "5px solid #007bff";
+            reminderBox.innerHTML = `<strong><i class="fas fa-award mr-2 text-primary"></i> Remember that in this task, you are expected to lead with dominance and assertiveness, controlling and forceful towards others.</strong><br>`;
         } else {
             reminderBox.style.borderLeft = "5px solid #6c757d";
             reminderBox.innerHTML = `<strong><i class="fas fa-user-check mr-2 text-secondary"></i> Leadership Style Assessment Reminder:</strong><br>As Team Leader, maintain standard management principles and high individual performance throughout the task.`;
@@ -647,6 +645,35 @@ window.onpopstate = function () {
     history.pushState(null, null, location.href);
     alert("Navigating backwards is disabled during this experiment.");
 };
+// Grab the confirmation element
+const confirmationTag = document.getElementById('advisor-confirmation-tag');
+
+// 1. When user clicks "Consult AI"
+document.getElementById('btn-help-ai')?.addEventListener('click', function() {
+    if (confirmationTag) {
+        // Update text with icon and show it
+        confirmationTag.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i> AI Support Deployed.';
+        confirmationTag.classList.remove('d-none');
+    }
+});
+
+// 2. When user clicks "Consult Subordinate"
+document.getElementById('btn-help-human')?.addEventListener('click', function() {
+    if (confirmationTag) {
+        // Update text with icon and show it
+        confirmationTag.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i> Subordinate Support Deployed.';
+        confirmationTag.classList.remove('d-none');
+    }
+});
+function loadNextTrial() {
+    // ... your existing code ...
+
+    // Hide confirmation tag for the new trial
+    const confirmationTag = document.getElementById('advisor-confirmation-tag');
+    if (confirmationTag) {
+        confirmationTag.classList.add('d-none');
+    }
+}
 </script>
 </body>
 </html>
