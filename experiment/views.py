@@ -436,6 +436,7 @@ def survey_view(request):
 
         # 2. ALSO save to SurveyResponse model (for standalone Survey Dashboard tab & CSV)
         SurveyResponse.objects.create(
+            session=session,
             # Section 1
             nervous_seeking=request.POST.get('nervous_seeking'),
             task_anxiety=request.POST.get('task_anxiety'),
@@ -696,27 +697,6 @@ def download_trials_csv(request):
             getattr(s, "mc_attention_check_value", "") if s else "",
             getattr(s, "passed_attention_check", False) if s else False,
 
-            # Post-Task Workspace Survey Data
-            # getattr(survey, "nervous_seeking", getattr(s, "nervous_seeking", "")),
-            # getattr(survey, "task_anxiety", getattr(s, "task_anxiety", "")),
-            # getattr(survey, "task_difficulty", getattr(s, "task_difficulty", "")),
-            # getattr(survey, "status_reduction", getattr(s, "status_reduction", "")),
-            # getattr(survey, "incompetent", getattr(s, "incompetent_rating", "")),
-            # getattr(survey, "inexperienced", getattr(s, "inexperienced_rating", "")),
-            # getattr(survey, "lesser", getattr(s, "lesser_rating", "")),
-            # getattr(survey, "org_status_hurt", getattr(s, "org_status_hurt_rating", "")),
-            # getattr(survey, "held_against", getattr(s, "held_against_rating", "")),
-            # getattr(survey, "subordinate_rejection_concern", ""),
-            # getattr(survey, "subordinate_compliance_expectation", ""),
-            # getattr(survey, "relational_strengthen", ""),
-            # getattr(survey, "relational_trust", ""),
-            # getattr(survey, "relational_collaboration", ""),
-            # getattr(survey, "relational_value_subordinate", ""),
-            # getattr(survey, "instrumental_human", ""),
-            # getattr(survey, "instrumental_ai", ""),
-            # getattr(survey, "perceived_competence_human", ""),
-            # getattr(survey, "perceived_competence_ai", ""),
-
             # Demographics
             getattr(s, "participant_age", "") if s else "",
             getattr(s, "participant_gender", "") if s else "",
@@ -746,11 +726,10 @@ def download_survey_csv(request):
     for r in SurveyResponse.objects.all().order_by('-created_at'):
         session = getattr(r, 'session', None)
 
-        session_id = getattr(session, 'session_id', 'N/A') if session else getattr(r, 'session_id', 'N/A')
-        prolific_pid = getattr(session, 'prolific_pid', 'N/A') if session else getattr(r, 'prolific_pid', 'N/A')
+        session_id = request.session.get('experiment_sid')
 
         writer.writerow([
-            r.id, session_id, prolific_pid,
+            r.id, session_id,
             r.created_at.strftime("%Y-%m-%d %H:%M:%S") if hasattr(r, 'created_at') else "",
             r.nervous_seeking, r.task_anxiety, r.task_difficulty, r.agree_with_manipulation,
             r.status_reduction, r.incompetent, r.inexperienced, r.lesser, r.org_status_hurt, r.held_against,

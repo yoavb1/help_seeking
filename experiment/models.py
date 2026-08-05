@@ -75,8 +75,13 @@ class ParticipantTrial(models.Model):
 
 
 class SurveyResponse(models.Model):
-    # Optional: Associate with a user or session
-    # user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    session = models.ForeignKey(
+        ChoiceExperimentSession,
+        on_delete=models.CASCADE,
+        related_name='survey_responses',
+        null=True,
+        blank=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     # 1. Task Experience

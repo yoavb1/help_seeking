@@ -30,7 +30,7 @@ PROLIFIC_COMPLETION_CODE = os.getenv('PROLIFIC_COMPLETION_CODE')
 SECRET_KEY = 'django-insecure-j32h-$k6+4=n6wfm76z0y^ti!nmie=ui8%+0al#jw(scsya#&5'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     'yoavbny.pythonanywhere.com',
