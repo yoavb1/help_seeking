@@ -691,8 +691,7 @@ def download_survey_csv(request):
     writer = csv.writer(response)
 
     writer.writerow([
-        "ID", "Session ID",
-        "Prolific PID",
+        "Session ID",
         "Submitted At",
         "Nervous Seeking", "Task Anxiety", "Task Difficulty", 'Agree with Manipulation',
         "Status Reduction", "Incompetent", "Inexperienced", "Lesser", "Org Status Hurt", "Held Against",
