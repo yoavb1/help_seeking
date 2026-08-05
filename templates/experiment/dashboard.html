@@ -33,8 +33,24 @@
         }
 
         .btn-consult-grey-human:hover:not(:disabled) {
-            background-color: #28a745 !important;
-            border-color: #28a745 !important;
+            background-color: #007bff !important;
+            border-color: #007bff !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3) !important;
+        }
+        /* Add this inside <style> */
+        .btn-consult-active-ai {
+            background-color: #007bff !important;
+            border-color: #007bff !important;
+            color: #ffffff !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3) !important;
+        }
+
+        .btn-consult-active-human {
+            background-color: #007bff !important;
+            border-color: #007bff !important;
+            color: #ffffff !important;
             transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3) !important;
         }
@@ -393,8 +409,20 @@ function startTrial() {
     submitBtn.disabled = true;
     submitBtn.className = "btn btn-secondary btn-block h-100 font-weight-bold shadow-sm d-flex flex-column justify-content-center align-items-center py-3";
 
-    document.getElementById('btn-help-human').disabled = false;
-    document.getElementById('btn-help-ai').disabled = false;
+    // --- RESET ADVISOR BUTTONS & ACTIVE STYLES FOR NEW TRIAL ---
+    const aiBtn = document.getElementById('btn-help-ai');
+    const humanBtn = document.getElementById('btn-help-human');
+
+    if (aiBtn) {
+        aiBtn.disabled = false;
+        aiBtn.classList.remove('btn-consult-active-ai');
+    }
+    if (humanBtn) {
+        humanBtn.disabled = false;
+        humanBtn.classList.remove('btn-consult-active-human');
+    }
+
+    // Reset Form Inputs
     document.getElementById('input-air').disabled = false;
     document.getElementById('input-sea').disabled = false;
     document.getElementById('input-rail').disabled = false;
@@ -464,9 +492,31 @@ function triggerAdvisor(type) {
     document.getElementById('input-air').value = currentTrial.adv_air;
     document.getElementById('input-sea').value = currentTrial.adv_sea;
     document.getElementById('input-rail').value = currentTrial.adv_rail;
-    document.getElementById('advisor-confirmation-tag').classList.remove('d-none');
 
-    // Trigger input check so button unlocks upon consulting advisor
+    // 1. Get elements
+    const aiBtn = document.getElementById('btn-help-ai');
+    const humanBtn = document.getElementById('btn-help-human');
+    const confirmationTag = document.getElementById('advisor-confirmation-tag');
+
+    // 2. Set active style & display confirmation text
+    if (type === 'ai') {
+        if (aiBtn) aiBtn.classList.add('btn-consult-active-ai');
+        if (confirmationTag) {
+            confirmationTag.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i> AI Support Deployed.';
+        }
+    } else if (type === 'human') {
+        if (humanBtn) humanBtn.classList.add('btn-consult-active-human');
+        if (confirmationTag) {
+            confirmationTag.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i> Subordinate Support Deployed.';
+        }
+    }
+
+    // 3. Make confirmation visible and lock both buttons from further clicks
+    if (confirmationTag) confirmationTag.classList.remove('d-none');
+    if (aiBtn) aiBtn.disabled = true;
+    if (humanBtn) humanBtn.disabled = true;
+
+    // Trigger input check so Authorize Allocation button unlocks
     checkInputsForActivation();
 }
 

@@ -631,27 +631,6 @@ def download_trials_csv(request):
         "Attention Check Value",
         "Passed Attention Check",
 
-        # # Post-Task Workspace Survey (Section 1 to Section 5)
-        # "Nervous Seeking",
-        # "Task Anxiety",
-        # "Task Difficulty",
-        # "Status Reduction",
-        # "Incompetent Rating",
-        # "Inexperienced Rating",
-        # "Lesser Rating",
-        # "Org Status Hurt Rating",
-        # "Held Against Rating",
-        # "Subordinate Rejection Concern",
-        # "Subordinate Compliance Expectation",
-        # "Relational Strengthen",
-        # "Relational Trust",
-        # "Relational Collaboration",
-        # "Relational Value Subordinate",
-        # "Instrumental Human",
-        # "Instrumental AI",
-        # "Perceived Competence Human",
-        # "Perceived Competence AI",
-
         # Demographics
         "Participant Age",
         "Participant Gender",
@@ -661,7 +640,6 @@ def download_trials_csv(request):
 
     for t in trials:
         s = t.session
-        # survey = getattr(s, 'survey_response', None) if s else None
 
         writer.writerow([
             # Session Metadata
@@ -724,12 +702,9 @@ def download_survey_csv(request):
     ])
 
     for r in SurveyResponse.objects.all().order_by('-created_at'):
-        session = getattr(r, 'session', None)
-
-        session_id = request.session.get('experiment_sid')
 
         writer.writerow([
-            r.id, session_id,
+            r.session.session_id,
             r.created_at.strftime("%Y-%m-%d %H:%M:%S") if hasattr(r, 'created_at') else "",
             r.nervous_seeking, r.task_anxiety, r.task_difficulty, r.agree_with_manipulation,
             r.status_reduction, r.incompetent, r.inexperienced, r.lesser, r.org_status_hurt, r.held_against,
